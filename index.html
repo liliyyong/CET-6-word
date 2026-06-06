@@ -358,6 +358,7 @@
     }
 
     .meaning-block.hidden { display: none; }
+    .hidden { display: none !important; }
 
     .example-block {
       border-radius: 18px;
@@ -631,7 +632,18 @@
               <div class="pill-row">
                 <span class="meta-chip" id="wordLevel">难度：六级高频核心</span>
                 <span class="meta-chip" id="wordTag">主题：加载中</span>
+                <span class="meta-chip" id="wordReviewMeta">复习状态：待判断</span>
               </div>
+
+              <section class="status-box warning" id="recognitionBox">
+                <strong>先判断熟悉程度</strong>
+                <div>先不要急着看释义，先判断你对这个单词的熟悉程度。</div>
+                <div class="word-actions" style="margin-top:12px;">
+                  <button class="button secondary" id="knowBtn" type="button">认识</button>
+                  <button class="button secondary" id="fuzzyBtn" type="button">模糊</button>
+                  <button class="button secondary" id="unknownBtn" type="button">不认识</button>
+                </div>
+              </section>
 
               <div class="word-actions">
                 <button class="button ghost" id="nextExampleBtn" type="button">切换例句</button>
@@ -646,11 +658,34 @@
                 <div class="helper" id="wordCollocation"></div>
               </section>
 
-              <section class="example-block">
+              <section class="example-block" id="exampleBlock">
                 <strong>例句</strong>
                 <div class="sentence-en clickable-text" id="exampleEn"></div>
                 <div class="sentence-cn" id="exampleCn"></div>
                 <div class="word-note" id="wordTip"></div>
+              </section>
+
+              <section class="status-box" id="reviewPlanBox">
+                <strong>复习安排</strong>
+                <div id="reviewPlanText">完成“认识 / 模糊 / 不认识”判断后，这里会显示复习计划。</div>
+              </section>
+
+              <section class="sub-panel" id="spellingPanel">
+                <h3>中译英拼写</h3>
+                <p class="helper" id="spellingPrompt">完成熟悉度判断后，可根据中文释义拼写英文单词。</p>
+                <div class="lookup-form">
+                  <label class="visually-hidden" for="spellingInput">根据中文拼写英文</label>
+                  <input id="spellingInput" type="text" placeholder="根据中文释义拼写英文">
+                  <button class="button primary" id="checkSpellingBtn" type="button">检查拼写</button>
+                </div>
+                <div class="word-actions">
+                  <button class="button secondary" id="showSpellingAnswerBtn" type="button">显示答案</button>
+                  <button class="button secondary" id="skipSpellingBtn" type="button">跳过拼写</button>
+                </div>
+                <div class="status-box" id="spellingStatus">
+                  <strong>拼写状态</strong>
+                  <div>当前还未进入拼写阶段。</div>
+                </div>
               </section>
             </article>
 
@@ -681,11 +716,16 @@
 
             <section class="export-panel">
               <strong>导出学习文档</strong>
-              <p class="helper">导出的 Word 文档将按分组整理单词，并包含单词、音标、释义、搭配、记忆提示和例句。</p>
+              <p class="helper">导出文档只生成英文单词和中文释义，可选择英中对照、只生成英文并保留中文填写空白，或只生成中文并保留英文填写空白。</p>
               <div class="checkbox-list">
                 <label class="checkbox-item"><input id="exportToday" type="checkbox" checked><span>导出当日学习词 <span class="helper" id="exportTodayCount">0 个</span></span></label>
                 <label class="checkbox-item"><input id="exportReview" type="checkbox" checked><span>导出复习词 <span class="helper" id="exportReviewCount">0 个</span></span></label>
                 <label class="checkbox-item"><input id="exportFavorites" type="checkbox" checked><span>导出收藏词 <span class="helper" id="exportFavoriteCount">0 个</span></span></label>
+              </div>
+              <div class="checkbox-list">
+                <label class="checkbox-item"><input id="exportModeBilingual" name="exportMode" type="radio" checked><span>英中对照：英文单词和中文释义一一对应</span></label>
+                <label class="checkbox-item"><input id="exportModeEnglishOnly" name="exportMode" type="radio"><span>只生成英文：保留自己填写中文的空白</span></label>
+                <label class="checkbox-item"><input id="exportModeChineseOnly" name="exportMode" type="radio"><span>只生成中文：保留自己填写英文的空白</span></label>
               </div>
               <div class="export-actions">
                 <button class="button primary" id="exportDocBtn" type="button">导出 Word 文档</button>
@@ -850,6 +890,7 @@
       const DAILY_PLAN_BANK = Array.isArray(window.DAILY_PLAN_BANK) ? window.DAILY_PLAN_BANK : [];
       const STORAGE_KEY = "cet6-study-hub-v3";
       const MAX_RECENT_WORDS = 16;
+      const REVIEW_INTERVALS = [0, 1, 2, 4, 7, 15, 30];
 
       if (!WORD_BANK.length || !QUESTION_BANK.length || !DAILY_PLAN_BANK.length) {
         document.body.innerHTML = '<div style="padding:24px;font-family:Segoe UI,Microsoft YaHei,sans-serif;color:#2e251d;"><h1>数据加载失败</h1><p>请确认 <code>word-bank.js</code> 和 <code>study-content.js</code> 已上传到同一目录，并且文件内容完整。</p></div>';
@@ -871,14 +912,16 @@
       let currentQuestion = QUESTION_BANK[0];
       let currentPlanIndex = getInitialPlanIndex();
       let isMeaningVisible = true;
+      let currentCardStage = "unrated";
+      let currentWordAssessment = "";
 
       const el = mapElements([
         "todayLabel", "todayFocus", "heroMessage", "focusTitle", "focusText",
         "summaryTodayCount", "summaryMasteredCount", "summaryFavoriteCount", "summaryWrongCount",
         "wordText", "wordPhonetic", "wordLevel", "wordTag", "wordMeaning", "wordCollocation",
-        "exampleEn", "exampleCn", "wordTip", "meaningBlock", "lookupInput", "lookupResult",
+        "exampleEn", "exampleCn", "wordTip", "meaningBlock", "exampleBlock", "wordReviewMeta", "recognitionBox", "reviewPlanBox", "reviewPlanText", "spellingPanel", "spellingPrompt", "spellingInput", "spellingStatus", "lookupInput", "lookupResult",
         "exportToday", "exportReview", "exportFavorites", "exportTodayCount", "exportReviewCount",
-        "exportFavoriteCount", "exportStatus", "recentWordsList", "favoriteWordsList",
+        "exportFavoriteCount", "exportStatus", "exportModeBilingual", "exportModeEnglishOnly", "exportModeChineseOnly", "recentWordsList", "favoriteWordsList",
         "reviewWordsList", "todayWordsList", "questionTitle", "questionStem", "optionList",
         "questionAnswerBox", "questionMeta", "questionExplain", "wrongQuestionList",
         "practiceStatus", "dailyTitle", "dailyMeta", "dailyTranslation", "dailyWriting",
@@ -921,6 +964,10 @@
           renderExportPanel();
         });
 
+        document.getElementById("knowBtn").addEventListener("click", () => rateCurrentWord("know"));
+        document.getElementById("fuzzyBtn").addEventListener("click", () => rateCurrentWord("fuzzy"));
+        document.getElementById("unknownBtn").addEventListener("click", () => rateCurrentWord("unknown"));
+
         document.getElementById("toggleMeaningBtn").addEventListener("click", () => {
           isMeaningVisible = !isMeaningVisible;
           renderWordSection(false);
@@ -954,6 +1001,15 @@
           renderWordLists();
           renderExportPanel();
           renderWordStatus(active ? `${currentWord.word} 已加入复习。` : `${currentWord.word} 已移出复习。`, "success");
+        });
+
+        document.getElementById("checkSpellingBtn").addEventListener("click", checkSpellingAnswer);
+        document.getElementById("showSpellingAnswerBtn").addEventListener("click", showSpellingAnswer);
+        document.getElementById("skipSpellingBtn").addEventListener("click", () => {
+          renderSpellingStatus(`已跳过 ${currentWord.word} 的拼写。`, "warning");
+        });
+        el.spellingInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") checkSpellingAnswer();
         });
 
         document.getElementById("lookupBtn").addEventListener("click", handleLookup);
@@ -1035,12 +1091,23 @@
         el.wordPhonetic.textContent = currentWord.phonetic || "";
         el.wordLevel.textContent = `难度：六级高频核心（共 ${WORD_BANK.length} 词）`;
         el.wordTag.textContent = `主题：${currentWord.tag || "未分类"}`;
+        el.wordReviewMeta.textContent = getReviewMetaText(currentWord.word);
         el.wordMeaning.textContent = currentWord.meaning || "暂无释义";
         el.wordCollocation.textContent = `常见搭配：${currentWord.collocation || "暂无"}`;
         el.wordTip.textContent = `记忆提示：${currentWord.tip || "暂无"}`;
-        el.meaningBlock.classList.toggle("hidden", !isMeaningVisible);
+        const shouldShowMeaning = currentCardStage !== "unrated" && isMeaningVisible;
+        el.meaningBlock.classList.toggle("hidden", !shouldShowMeaning);
+        el.exampleBlock.classList.toggle("hidden", currentCardStage === "unrated");
+        el.recognitionBox.classList.toggle("hidden", currentCardStage !== "unrated");
+        el.reviewPlanBox.classList.toggle("hidden", currentCardStage === "unrated");
+        el.spellingPanel.classList.toggle("hidden", currentCardStage === "unrated");
+        el.spellingInput.value = "";
+        el.spellingPrompt.textContent = currentCardStage === "unrated"
+          ? "完成熟悉度判断后，可根据中文释义拼写英文单词。"
+          : `根据中文释义拼写英文：${currentWord.meaning || "暂无释义"}`;
         updateWordActionButtons();
         renderExample();
+        renderReviewPlan();
         if (showLookup) showLookupResult(currentWord);
       }
 
@@ -1054,6 +1121,17 @@
         syncToggleButton("toggleMasteredBtn", state.mastered[currentWord.word], "取消已掌握", "标记已掌握");
         syncToggleButton("toggleFavoriteBtn", state.favoriteWords[currentWord.word], "移出收藏", "加入收藏");
         syncToggleButton("toggleReviewBtn", state.reviewWords[currentWord.word], "移出复习", "加入复习");
+      }
+
+      function renderReviewPlan() {
+        if (currentCardStage === "unrated") {
+          el.reviewPlanText.textContent = "完成“认识 / 模糊 / 不认识”判断后，这里会显示复习计划。";
+          renderSpellingStatus("当前还未进入拼写阶段。", "");
+          return;
+        }
+        const progress = getWordProgress(currentWord.word);
+        el.reviewPlanText.textContent = buildReviewPlanText(currentWord.word, progress, currentWordAssessment);
+        renderSpellingStatus("可以开始根据中文释义拼写英文。", "warning");
       }
 
       function renderWordLists() {
@@ -1231,14 +1309,14 @@
       }
 
       async function handleExportDocx() {
-        const groups = buildExportGroups();
-        if (!groups.length) {
+        const exportData = buildExportGroups();
+        if (!exportData.groups.length) {
           renderStatusBox(el.exportStatus, "没有可导出的内容。请至少勾选一个非空分组。", "error", "导出提示");
           return;
         }
 
         try {
-          const blob = await buildDocxBlob(groups);
+          const blob = await buildDocxBlob(exportData);
           const fileName = `六级学习清单_${todayKey}.docx`;
           downloadBlob(blob, fileName);
           renderStatusBox(el.exportStatus, `已生成 ${fileName}，可直接用 Word 或 WPS 打开。`, "success", "导出完成");
@@ -1261,21 +1339,39 @@
           const words = Object.keys(state.favoriteWords).filter((word) => state.favoriteWords[word]).map(findWord).filter(Boolean);
           if (words.length) groups.push({ title: "收藏词", words });
         }
-        return groups;
+        return {
+          layout: getExportLayout(),
+          groups
+        };
+      }
+
+      function getExportLayout() {
+        if (el.exportModeEnglishOnly.checked) return "english-only";
+        if (el.exportModeChineseOnly.checked) return "chinese-only";
+        return "bilingual";
       }
 
       function chooseInitialWord() {
+        const dueWord = getNextDueWord();
         const savedIndex = WORD_BANK.findIndex((item) => item.word === state.lastWord);
-        currentWordIndex = savedIndex >= 0 ? savedIndex : WORD_ORDER[dailySeed % WORD_ORDER.length];
+        const dueIndex = dueWord ? WORD_BANK.findIndex((item) => item.word === dueWord.word) : -1;
+        currentWordIndex = dueIndex >= 0 ? dueIndex : (savedIndex >= 0 ? savedIndex : WORD_ORDER[dailySeed % WORD_ORDER.length]);
         currentWord = WORD_BANK[currentWordIndex];
         currentExampleIndex = 0;
+        resetCurrentCardStage();
         recordWordView(currentWord.word);
       }
 
       function chooseNextWord() {
-        currentWordIndex = findNextWordIndex(currentWordIndex);
+        const dueWord = getNextDueWord(currentWord.word);
+        if (dueWord) {
+          currentWordIndex = WORD_BANK.findIndex((item) => item.word === dueWord.word);
+        } else {
+          currentWordIndex = findNextWordIndex(currentWordIndex);
+        }
         currentWord = WORD_BANK[currentWordIndex];
         currentExampleIndex = 0;
+        resetCurrentCardStage();
         recordWordView(currentWord.word);
       }
 
@@ -1308,6 +1404,7 @@
         currentWord = found;
         currentWordIndex = WORD_BANK.findIndex((item) => item.word === found.word);
         currentExampleIndex = 0;
+        resetCurrentCardStage();
         el.lookupInput.value = found.word;
         renderWordSection(showLookup);
         renderWordLists();
@@ -1377,6 +1474,73 @@
         renderStatusBox(el.wordStatus, message, tone, "学习状态");
       }
 
+      function renderSpellingStatus(message, tone) {
+        renderStatusBox(el.spellingStatus, message, tone, "拼写状态");
+      }
+
+      function rateCurrentWord(rating) {
+        currentCardStage = "rated";
+        currentWordAssessment = rating;
+        isMeaningVisible = true;
+        const progress = updateWordProgress(currentWord.word, rating);
+        if (rating === "know") {
+          state.mastered[currentWord.word] = true;
+          delete state.reviewWords[currentWord.word];
+        } else if (rating === "fuzzy") {
+          state.reviewWords[currentWord.word] = true;
+        } else if (rating === "unknown") {
+          state.reviewWords[currentWord.word] = true;
+          delete state.mastered[currentWord.word];
+        }
+        saveState();
+        renderWordSection(true);
+        renderDashboard();
+        renderWordLists();
+        renderExportPanel();
+        renderWordStatus(buildReviewPlanText(currentWord.word, progress, rating), "success");
+      }
+
+      function checkSpellingAnswer() {
+        if (currentCardStage === "unrated") {
+          renderSpellingStatus("请先完成“认识 / 模糊 / 不认识”的判断。", "error");
+          return;
+        }
+        const answer = el.spellingInput.value.trim().toLowerCase();
+        if (!answer) {
+          renderSpellingStatus("请输入英文单词后再检查。", "error");
+          return;
+        }
+        if (answer === currentWord.word.toLowerCase()) {
+          state.mastered[currentWord.word] = true;
+          saveState();
+          renderDashboard();
+          updateWordActionButtons();
+          renderSpellingStatus(`拼写正确：${currentWord.word}`, "success");
+          return;
+        }
+        state.reviewWords[currentWord.word] = true;
+        saveState();
+        renderWordLists();
+        renderExportPanel();
+        renderDashboard();
+        updateWordActionButtons();
+        renderSpellingStatus(`拼写不正确，正确答案是 ${currentWord.word}。`, "error");
+      }
+
+      function showSpellingAnswer() {
+        if (currentCardStage === "unrated") {
+          renderSpellingStatus("请先完成熟悉度判断。", "error");
+          return;
+        }
+        el.spellingInput.value = currentWord.word;
+        state.reviewWords[currentWord.word] = true;
+        saveState();
+        renderWordLists();
+        renderExportPanel();
+        updateWordActionButtons();
+        renderSpellingStatus(`已显示答案：${currentWord.word}`, "warning");
+      }
+
       function renderStatusBox(container, message, tone, title) {
         container.classList.remove("success", "warning", "error");
         if (tone) container.classList.add(tone);
@@ -1404,6 +1568,89 @@
         return Object.keys(record).filter((key) => record[key]).length;
       }
 
+      function resetCurrentCardStage() {
+        currentCardStage = "unrated";
+        currentWordAssessment = "";
+      }
+
+      function getWordProgress(word) {
+        const progress = state.wordProgress[word];
+        if (!progress || typeof progress !== "object") {
+          return { stage: 0, nextReviewDate: "", lastReviewDate: "", lastRating: "" };
+        }
+        return {
+          stage: Number.isInteger(progress.stage) ? progress.stage : 0,
+          nextReviewDate: progress.nextReviewDate || "",
+          lastReviewDate: progress.lastReviewDate || "",
+          lastRating: progress.lastRating || ""
+        };
+      }
+
+      function updateWordProgress(word, rating) {
+        const previous = getWordProgress(word);
+        let stage = previous.stage;
+        if (rating === "unknown") {
+          stage = 0;
+        } else if (rating === "fuzzy") {
+          stage = Math.max(1, Math.min(stage + 1, REVIEW_INTERVALS.length - 2));
+        } else {
+          stage = Math.min(stage + 1, REVIEW_INTERVALS.length - 1);
+        }
+        const intervalDays = rating === "unknown" ? REVIEW_INTERVALS[0] : REVIEW_INTERVALS[stage];
+        const nextReviewDate = formatDateOffset(intervalDays);
+        const next = {
+          stage,
+          nextReviewDate,
+          lastReviewDate: todayKey,
+          lastRating: rating
+        };
+        state.wordProgress[word] = next;
+        return next;
+      }
+
+      function getReviewMetaText(word) {
+        const progress = getWordProgress(word);
+        if (!progress.nextReviewDate) {
+          return "复习状态：尚未建立计划";
+        }
+        return `复习状态：下次 ${progress.nextReviewDate}`;
+      }
+
+      function buildReviewPlanText(word, progress, rating) {
+        const ratingMap = {
+          know: "认识",
+          fuzzy: "模糊",
+          unknown: "不认识"
+        };
+        const label = ratingMap[rating || progress.lastRating] || "未判断";
+        if (!progress.nextReviewDate) {
+          return `${word} 还没有复习计划。`;
+        }
+        return `${word} 当前判断为“${label}”，已按艾宾浩斯曲线安排在 ${progress.nextReviewDate} 复习。`;
+      }
+
+      function formatDateOffset(days) {
+        const date = new Date();
+        date.setDate(date.getDate() + days);
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${date.getFullYear()}-${month}-${day}`;
+      }
+
+      function getNextDueWord(excludeWord = "") {
+        const dueWords = WORD_BANK.filter((word) => {
+          const progress = getWordProgress(word.word);
+          return progress.nextReviewDate && progress.nextReviewDate <= todayKey && word.word !== excludeWord;
+        });
+        if (!dueWords.length) return null;
+        dueWords.sort((a, b) => {
+          const aProgress = getWordProgress(a.word);
+          const bProgress = getWordProgress(b.word);
+          return String(aProgress.nextReviewDate).localeCompare(String(bProgress.nextReviewDate));
+        });
+        return dueWords[0];
+      }
+
       function mapElements(ids) {
         return ids.reduce((acc, id) => {
           acc[id] = document.getElementById(id);
@@ -1417,6 +1664,7 @@
           favoriteWords: {},
           reviewWords: {},
           wrongQuestions: {},
+          wordProgress: {},
           recentWords: [],
           dailyWords: {},
           lastWord: "",
@@ -1434,6 +1682,7 @@
             return {
               ...fallback,
               mastered: sanitizeRecord(parsedLegacy.mastered),
+              wordProgress: {},
               recentWords: Array.isArray(parsedLegacy.history) ? parsedLegacy.history.slice(0, MAX_RECENT_WORDS) : [],
               lastWord: parsedLegacy.lastWord || ""
             };
@@ -1445,6 +1694,7 @@
             favoriteWords: sanitizeRecord(parsed.favoriteWords),
             reviewWords: sanitizeRecord(parsed.reviewWords),
             wrongQuestions: sanitizeRecord(parsed.wrongQuestions),
+            wordProgress: sanitizeWordProgress(parsed.wordProgress),
             recentWords: Array.isArray(parsed.recentWords) ? parsed.recentWords.slice(0, MAX_RECENT_WORDS) : [],
             dailyWords: sanitizeDailyWords(parsed.dailyWords),
             lastWord: parsed.lastWord || "",
@@ -1465,6 +1715,21 @@
         if (!value || typeof value !== "object") return {};
         return Object.keys(value).reduce((acc, key) => {
           acc[key] = Array.isArray(value[key]) ? value[key].filter((item) => typeof item === "string") : [];
+          return acc;
+        }, {});
+      }
+
+      function sanitizeWordProgress(value) {
+        if (!value || typeof value !== "object") return {};
+        return Object.keys(value).reduce((acc, key) => {
+          const item = value[key];
+          if (!item || typeof item !== "object") return acc;
+          acc[key] = {
+            stage: Number.isInteger(item.stage) ? item.stage : 0,
+            nextReviewDate: item.nextReviewDate || "",
+            lastReviewDate: item.lastReviewDate || "",
+            lastRating: item.lastRating || ""
+          };
           return acc;
         }, {});
       }
@@ -1521,13 +1786,13 @@
           .replaceAll("'", "&#39;");
       }
 
-      async function buildDocxBlob(groups) {
+      async function buildDocxBlob(exportData) {
         const files = [
           { name: "[Content_Types].xml", content: buildContentTypesXml() },
           { name: "_rels/.rels", content: buildRootRelsXml() },
           { name: "docProps/app.xml", content: buildAppXml() },
           { name: "docProps/core.xml", content: buildCoreXml() },
-          { name: "word/document.xml", content: buildDocumentXml(groups) },
+          { name: "word/document.xml", content: buildDocumentXml(exportData) },
           { name: "word/styles.xml", content: buildStylesXml() },
           { name: "word/_rels/document.xml.rels", content: buildDocumentRelsXml() }
         ];
@@ -1612,23 +1877,26 @@
 </w:styles>`;
       }
 
-      function buildDocumentXml(groups) {
+      function buildDocumentXml(exportData) {
+        const { groups, layout } = exportData;
         const parts = [];
         parts.push(wordParagraph("六级学习清单", "Title"));
         parts.push(wordParagraph(`导出日期：${formatToday()}`));
+        parts.push(wordParagraph(`导出模式：${getExportLayoutLabel(layout)}`));
         parts.push(wordParagraph(""));
         groups.forEach((group) => {
           parts.push(wordParagraph(`${group.title}（${group.words.length} 个）`, "Heading1"));
           group.words.forEach((word, index) => {
-            parts.push(wordParagraph(`${index + 1}. ${word.word}`, "Heading2"));
-            parts.push(wordParagraph(`音标：${word.phonetic || "暂无"}`));
-            parts.push(wordParagraph(`释义：${word.meaning || "暂无"}`));
-            parts.push(wordParagraph(`搭配：${word.collocation || "暂无"}`));
-            parts.push(wordParagraph(`记忆提示：${word.tip || "暂无"}`));
-            (word.examples || []).forEach((example, exampleIndex) => {
-              parts.push(wordParagraph(`例句 ${exampleIndex + 1}：${example[0] || ""}`));
-              parts.push(wordParagraph(`译文 ${exampleIndex + 1}：${example[1] || ""}`));
-            });
+            if (layout === "english-only") {
+              parts.push(wordParagraph(`${index + 1}. 英文：${word.word}`, "Heading2"));
+              parts.push(wordParagraph("中文：________________________________"));
+            } else if (layout === "chinese-only") {
+              parts.push(wordParagraph(`${index + 1}. 中文：${word.meaning || "暂无"}`, "Heading2"));
+              parts.push(wordParagraph("英文：________________________________"));
+            } else {
+              parts.push(wordParagraph(`${index + 1}. 英文：${word.word}`, "Heading2"));
+              parts.push(wordParagraph(`中文：${word.meaning || "暂无"}`));
+            }
             parts.push(wordParagraph(""));
           });
         });
@@ -1643,6 +1911,12 @@
     </w:sectPr>
   </w:body>
 </w:document>`;
+      }
+
+      function getExportLayoutLabel(layout) {
+        if (layout === "english-only") return "只生成英文，保留中文填写空白";
+        if (layout === "chinese-only") return "只生成中文，保留英文填写空白";
+        return "英中对照";
       }
 
       function wordParagraph(text, style = "Normal") {
