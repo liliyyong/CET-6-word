@@ -3,30 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>六级 30 天离线学习工具</title>
+  <title>六级学习中枢</title>
   <style>
     :root {
-      --bg: #f3efe7;
-      --paper: rgba(255, 251, 245, 0.9);
-      --paper-strong: #fffdf8;
-      --line: rgba(91, 70, 46, 0.16);
+      --bg: #f5efe6;
+      --paper: rgba(255, 251, 245, 0.92);
+      --paper-strong: #fffdf9;
+      --line: rgba(110, 84, 56, 0.16);
       --text: #2e251d;
-      --muted: #766455;
-      --accent: #ca6d3f;
-      --accent-deep: #9f4b22;
-      --accent-soft: rgba(202, 109, 63, 0.12);
-      --teal: #4a8e88;
-      --teal-soft: rgba(74, 142, 136, 0.12);
+      --muted: #6f6052;
+      --accent: #c36a38;
+      --accent-deep: #93451f;
+      --accent-soft: rgba(195, 106, 56, 0.12);
+      --teal: #3d8c84;
+      --teal-soft: rgba(61, 140, 132, 0.12);
       --gold: #d3a24a;
-      --shadow: 0 18px 44px rgba(73, 50, 32, 0.12);
-      --radius: 26px;
+      --danger: #c34d3d;
+      --danger-soft: rgba(195, 77, 61, 0.12);
+      --success: #2b7a52;
+      --success-soft: rgba(43, 122, 82, 0.12);
+      --shadow: 0 20px 48px rgba(74, 52, 34, 0.12);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
       --font-ui: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       --font-display: "Georgia", "STSong", serif;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -34,9 +38,9 @@
       color: var(--text);
       font-family: var(--font-ui);
       background:
-        radial-gradient(circle at 0% 0%, rgba(211, 162, 74, 0.18), transparent 26%),
-        radial-gradient(circle at 100% 12%, rgba(74, 142, 136, 0.14), transparent 26%),
-        linear-gradient(135deg, #f7f2eb 0%, #f3ecdf 55%, #efe4d4 100%);
+        radial-gradient(circle at 0% 0%, rgba(211, 162, 74, 0.18), transparent 24%),
+        radial-gradient(circle at 100% 10%, rgba(61, 140, 132, 0.14), transparent 24%),
+        linear-gradient(135deg, #f7f2eb 0%, #f3ecdf 54%, #efe4d4 100%);
     }
 
     body::before,
@@ -45,57 +49,56 @@
       position: fixed;
       z-index: -1;
       border-radius: 999px;
-      filter: blur(20px);
+      filter: blur(26px);
       opacity: 0.7;
     }
 
     body::before {
-      width: 340px;
-      height: 340px;
-      left: -80px;
+      width: 320px;
+      height: 320px;
+      left: -90px;
       top: 80px;
-      background: rgba(202, 109, 63, 0.14);
+      background: rgba(195, 106, 56, 0.16);
     }
 
     body::after {
-      width: 320px;
-      height: 320px;
-      right: -80px;
-      bottom: 60px;
-      background: rgba(74, 142, 136, 0.12);
+      width: 300px;
+      height: 300px;
+      right: -90px;
+      bottom: 80px;
+      background: rgba(61, 140, 132, 0.14);
     }
 
-    .app {
-      width: min(1420px, calc(100% - 32px));
-      margin: 20px auto;
-      padding: 24px;
+    .app-shell {
+      width: min(1380px, calc(100% - 28px));
+      margin: 16px auto;
+      padding: 22px;
       border-radius: 34px;
-      background: rgba(255, 249, 241, 0.74);
-      border: 1px solid rgba(255, 255, 255, 0.7);
+      background: rgba(255, 249, 241, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.72);
       backdrop-filter: blur(14px);
       box-shadow: var(--shadow);
     }
 
     .hero {
       display: grid;
-      grid-template-columns: 1.4fr 1fr;
+      grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
       gap: 18px;
       margin-bottom: 18px;
     }
 
-    .hero-card,
-    .stats-card,
-    .panel {
-      border-radius: var(--radius);
+    .card,
+    .panel,
+    .summary-item {
+      border-radius: var(--radius-xl);
       background: var(--paper);
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      box-shadow: 0 10px 24px rgba(87, 58, 34, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 12px 24px rgba(87, 58, 34, 0.08);
     }
 
-    .hero-card,
-    .stats-card {
-      padding: 22px;
-    }
+    .hero-main,
+    .hero-side,
+    .panel { padding: 22px; }
 
     .eyebrow {
       margin: 0 0 10px;
@@ -105,980 +108,1650 @@
       color: var(--accent-deep);
     }
 
-    h1, h2, h3 {
-      margin: 0;
-    }
+    h1, h2, h3, h4, p { margin: 0; }
 
     h1 {
       font-family: var(--font-display);
-      font-size: clamp(2rem, 3vw, 3.2rem);
+      font-size: clamp(2.1rem, 3vw, 3.4rem);
       line-height: 1.04;
     }
 
-    .hero-copy,
+    h2 { font-size: clamp(1.45rem, 2vw, 1.95rem); }
+    h3 { font-size: 1.15rem; }
+
     .muted,
-    .list-text,
-    .question-explain,
-    .recommend-copy,
+    .hero-copy,
+    .helper,
     .lookup-result p,
-    .daily-section p {
+    .question-explain,
+    .word-note,
+    .section-copy,
+    .daily-copy {
       color: var(--muted);
-      line-height: 1.7;
+      line-height: 1.72;
     }
 
     .hero-copy {
-      margin: 12px 0 0;
-      max-width: 50rem;
+      margin-top: 12px;
+      max-width: 52rem;
     }
 
     .hero-actions,
+    .tab-list,
     .word-actions,
-    .lookup-form,
     .question-actions,
-    .recommend-actions,
-    .chip-row,
-    .history-list,
-    .quick-grid {
+    .daily-actions,
+    .lookup-form,
+    .export-actions,
+    .pill-row,
+    .chip-list,
+    .quick-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       align-items: center;
     }
 
-    .hero-actions {
-      margin-top: 20px;
+    .hero-actions { margin-top: 20px; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .summary-item {
+      padding: 18px 16px;
+      border-radius: 24px;
+    }
+
+    .summary-item strong {
+      display: block;
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
+
+    .quick-actions { margin-top: 18px; }
+
+    .button,
+    .tab-button,
+    .option,
+    .chip-button {
+      appearance: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+      font: inherit;
+    }
+
+    .button:hover,
+    .tab-button:hover,
+    .option:hover,
+    .chip-button:hover { transform: translateY(-1px); }
+
+    .button:disabled,
+    .option:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .button {
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .button.primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+      box-shadow: 0 14px 26px rgba(195, 106, 56, 0.22);
+    }
+
+    .button.secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.78);
+      border-color: var(--line);
+    }
+
+    .button.ghost {
+      color: var(--accent-deep);
+      background: var(--accent-soft);
+      border-color: rgba(195, 106, 56, 0.22);
+    }
+
+    .button.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--teal) 0%, #286963 100%);
+      border-color: transparent;
+      box-shadow: 0 12px 24px rgba(61, 140, 132, 0.22);
     }
 
     .date-pill,
-    .chip,
-    .tag,
-    .mini-stat,
-    .history-item,
-    .option {
-      border-radius: 999px;
+    .summary-item,
+    .meta-chip,
+    .chip-button,
+    .empty-box,
+    .status-box,
+    .lookup-result,
+    .export-panel,
+    .daily-card,
+    .question-card,
+    .word-card,
+    .sub-panel {
+      border-radius: var(--radius-lg);
       border: 1px solid var(--line);
       background: rgba(255, 255, 255, 0.76);
     }
 
     .date-pill,
-    .chip,
-    .tag,
-    .mini-stat,
-    .history-item {
-      padding: 9px 14px;
-    }
+    .meta-chip,
+    .chip-button { padding: 9px 14px; }
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 18px;
-    }
+    .tab-list { margin-bottom: 16px; }
 
-    .mini-stat strong {
-      display: block;
-      font-size: 1.5rem;
-      margin-bottom: 4px;
-    }
-
-    .layout {
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-    }
-
-    .zone {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .zone-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: end;
-      padding: 4px 6px 0;
-    }
-
-    .zone-copy {
-      margin: 8px 0 0;
+    .tab-button {
+      min-height: 44px;
+      padding: 0 18px;
+      border-radius: 999px;
       color: var(--muted);
-      line-height: 1.7;
-      max-width: 54rem;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid var(--line);
+      font-weight: 600;
     }
 
-    .zone-panels {
+    .tab-button.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+      box-shadow: 0 12px 22px rgba(195, 106, 56, 0.2);
+      border-color: transparent;
+    }
+
+    .tab-panel {
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .tab-panel.active { display: flex; }
+
+    .grid-two {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
       gap: 18px;
       align-items: start;
     }
 
-    .zone-panels.single {
-      grid-template-columns: 1fr;
-    }
-
-    .panel {
-      padding: 20px;
-    }
-
-    .panel.tight {
-      padding: 18px;
-    }
-
-    .panel-head {
+    .panel-head,
+    .section-head {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
       align-items: start;
       margin-bottom: 16px;
     }
 
-    .panel-head p {
-      margin: 8px 0 0;
+    .section-copy {
+      margin-top: 8px;
+      max-width: 54rem;
     }
+
+    .word-card,
+    .question-card,
+    .daily-card,
+    .lookup-result,
+    .export-panel,
+    .sub-panel,
+    .status-box,
+    .empty-box { padding: 18px; }
 
     .word-card {
-      padding: 20px;
-      border-radius: 24px;
       background: linear-gradient(145deg, rgba(255, 248, 238, 0.96), rgba(255, 253, 247, 0.92));
-      border: 1px solid rgba(123, 88, 60, 0.12);
     }
 
-    .word-main {
+    .word-top {
       display: flex;
       justify-content: space-between;
       gap: 16px;
       align-items: start;
+      margin-bottom: 18px;
     }
 
-    .word {
-      font-size: clamp(2rem, 4vw, 3.3rem);
+    .word-text {
       font-family: var(--font-display);
+      font-size: clamp(2.4rem, 4vw, 4rem);
+      line-height: 0.98;
     }
 
     .phonetic {
-      margin-top: 8px;
-      font-size: 1rem;
+      margin-top: 10px;
       color: var(--teal);
-    }
-
-    .meaning-box,
-    .example-box,
-    .lookup-result,
-    .recommend-card,
-    .question-card,
-    .daily-section {
-      margin-top: 16px;
-      padding: 16px;
-      border-radius: 20px;
-      background: var(--paper-strong);
-      border: 1px solid var(--line);
-    }
-
-    .meaning-box strong,
-    .example-box strong,
-    .recommend-card strong,
-    .lookup-result strong,
-    .daily-section strong {
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    .sentence-en {
       font-size: 1.05rem;
-      line-height: 1.7;
     }
 
-    .clickable-text {
-      line-height: 1.8;
+    .pill-row { margin-bottom: 16px; }
+    .meta-chip { color: var(--muted); }
+
+    .meaning-block,
+    .example-block,
+    .status-box { margin-top: 14px; }
+
+    .meaning-block strong,
+    .example-block strong,
+    .lookup-result strong,
+    .status-box strong,
+    .daily-card strong,
+    .question-card strong,
+    .export-panel strong {
+      display: block;
+      margin-bottom: 10px;
     }
 
-    .vocab-link {
-      display: inline-block;
-      margin: 0 1px;
-      padding: 0 4px;
-      border-radius: 8px;
-      color: var(--accent-deep);
-      background: rgba(202, 109, 63, 0.08);
-      cursor: pointer;
-      transition: background 0.16s ease, color 0.16s ease;
+    .meaning-block {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(61, 140, 132, 0.18);
+      border-radius: 18px;
+      padding: 16px;
     }
 
-    .vocab-link:hover {
-      color: #fffaf6;
-      background: var(--accent);
+    .meaning-block.hidden { display: none; }
+
+    .example-block {
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.68);
+      padding: 16px;
+      border: 1px solid rgba(110, 84, 56, 0.12);
     }
 
-    .sentence-cn {
-      margin-top: 8px;
-      color: var(--muted);
+    .sentence-cn,
+    .helper { margin-top: 8px; }
+
+    .word-note {
+      margin-top: 12px;
+      font-size: 0.96rem;
     }
 
-    .secondary-copy {
-      margin-top: 8px;
-      font-size: 0.95rem;
-      color: var(--muted);
-    }
+    .chip-list { align-items: stretch; }
 
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      border: 0;
-      border-radius: 14px;
-      padding: 11px 16px;
-      cursor: pointer;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-    }
-
-    .primary {
-      color: #fffaf6;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
-      box-shadow: 0 10px 20px rgba(159, 75, 34, 0.22);
-    }
-
-    .secondary {
+    .chip-button {
       color: var(--text);
-      background: rgba(255, 255, 255, 0.88);
-      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.85);
+      text-align: left;
     }
 
-    .ghost {
+    .chip-button.empty {
       color: var(--muted);
-      background: transparent;
-      border: 1px dashed rgba(91, 70, 46, 0.28);
-      box-shadow: none;
+      cursor: default;
     }
 
-    input {
-      width: 100%;
-      min-width: 0;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.9);
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    input:focus {
-      border-color: rgba(202, 109, 63, 0.5);
-      box-shadow: 0 0 0 4px rgba(202, 109, 63, 0.1);
+    .sub-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
     .lookup-form input {
-      flex: 1 1 220px;
+      flex: 1;
+      min-width: 0;
+      min-height: 48px;
+      padding: 0 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.88);
+      font: inherit;
+      color: var(--text);
+    }
+
+    .lookup-form input:focus {
+      outline: 2px solid rgba(61, 140, 132, 0.22);
+      border-color: rgba(61, 140, 132, 0.36);
+    }
+
+    .lookup-result p + p { margin-top: 8px; }
+
+    .export-panel {
+      background: linear-gradient(145deg, rgba(255, 250, 244, 0.96), rgba(255, 255, 255, 0.94));
+    }
+
+    .checkbox-list {
+      display: grid;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .checkbox-item {
+      display: flex;
+      gap: 10px;
+      align-items: start;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .checkbox-item input {
+      margin-top: 3px;
+      accent-color: var(--accent);
+    }
+
+    .status-box { background: rgba(255, 255, 255, 0.82); }
+    .status-box.success {
+      border-color: rgba(43, 122, 82, 0.26);
+      background: rgba(43, 122, 82, 0.08);
+    }
+    .status-box.warning {
+      border-color: rgba(195, 106, 56, 0.24);
+      background: rgba(195, 106, 56, 0.08);
+    }
+    .status-box.error {
+      border-color: rgba(195, 77, 61, 0.28);
+      background: rgba(195, 77, 61, 0.08);
     }
 
     .option-list {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 14px;
+      margin-top: 16px;
     }
 
     .option {
-      width: 100%;
-      padding: 14px 16px;
+      min-height: 54px;
+      padding: 12px 14px;
+      border-radius: 18px;
       text-align: left;
-      cursor: pointer;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.82);
     }
 
     .option.correct {
-      background: rgba(74, 142, 136, 0.14);
-      border-color: rgba(74, 142, 136, 0.44);
+      color: var(--success);
+      border-color: rgba(43, 122, 82, 0.26);
+      background: rgba(43, 122, 82, 0.08);
     }
 
     .option.wrong {
-      background: rgba(202, 109, 63, 0.12);
-      border-color: rgba(202, 109, 63, 0.4);
+      color: var(--danger);
+      border-color: rgba(195, 77, 61, 0.26);
+      background: rgba(195, 77, 61, 0.08);
     }
 
     .question-meta,
-    .recommend-meta {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .history-list {
+    .daily-meta {
       margin-top: 14px;
-    }
-
-    .history-item {
       color: var(--muted);
-      cursor: pointer;
     }
 
-    .history-item:hover {
-      color: var(--accent-deep);
-    }
+    .question-explain { margin-top: 14px; }
 
-    .footer-note {
-      margin-top: 18px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(74, 142, 136, 0.08);
-      color: var(--muted);
-      line-height: 1.7;
+    .question-answer-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(61, 140, 132, 0.2);
+      background: rgba(61, 140, 132, 0.08);
     }
 
     .daily-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      margin-top: 8px;
+      gap: 14px;
+      margin-top: 16px;
     }
 
-    .daily-section {
-      margin-top: 0;
+    .clickable-text .vocab-link,
+    .lookup-result .vocab-link {
+      color: var(--accent-deep);
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 3px;
     }
 
-    .quick-grid {
-      margin-top: 12px;
+    .footer-note {
+      margin-top: 4px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px dashed rgba(110, 84, 56, 0.18);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.48);
     }
 
-    .hidden {
-      display: none;
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
-    @media (max-width: 1080px) {
-      .hero {
-        grid-template-columns: 1fr;
-      }
-
-      .zone-panels {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 1120px) {
+      .hero,
+      .grid-two { grid-template-columns: 1fr; }
+      .hero-side { order: -1; }
     }
 
-    @media (max-width: 720px) {
-      .app {
-        width: min(100% - 16px, 100%);
-        margin: 8px auto;
+    @media (max-width: 768px) {
+      .app-shell {
+        width: min(100%, calc(100% - 14px));
         padding: 14px;
-        border-radius: 22px;
+        margin: 8px auto;
+        border-radius: 24px;
       }
 
-      .panel,
-      .hero-card,
-      .stats-card {
-        padding: 16px;
-      }
+      .hero-main,
+      .hero-side,
+      .panel { padding: 18px; }
 
-      .word-main,
-      .panel-head {
+      .summary-grid,
+      .option-list { grid-template-columns: 1fr; }
+
+      .word-top,
+      .panel-head,
+      .section-head { flex-direction: column; }
+
+      .button,
+      .tab-button { width: 100%; }
+
+      .lookup-form {
         flex-direction: column;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      button,
-      .option {
-        width: 100%;
+        align-items: stretch;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="app-shell">
     <section class="hero">
-      <div class="hero-card">
-        <p class="eyebrow">CET-6 30-Day Offline Kit</p>
-        <h1>六级 30 天离线学习工具</h1>
-        <p class="hero-copy">
-          适合连续 30 天打开就学的本地版六级工具：更大的高频词库、更多例句、更多六级题目实例，
-          以及每天一组翻译和作文练习。整个页面纯前端离线运行，不依赖网络，双击打开即可使用。
-        </p>
+      <article class="card hero-main">
+        <p class="eyebrow">CET-6 Study Hub</p>
+        <h1>六级词汇、练习与导出一体化学习台</h1>
+        <p class="hero-copy" id="heroMessage">每天学词、刷题、完成双练，并可把当日学习词、复习词和收藏词整理成 Word 文档导出。</p>
         <div class="hero-actions">
-          <div class="date-pill" id="todayLabel"></div>
-          <button class="primary" id="generateWordBtn" type="button">抽取下一个单词</button>
-          <button class="secondary" id="showMeaningBtn" type="button">显示 / 隐藏释义</button>
+          <span class="date-pill" id="todayLabel">加载中</span>
+          <span class="date-pill" id="todayFocus">今日目标：词汇 + 练习 + 双练</span>
         </div>
-      </div>
-      <aside class="stats-card">
-        <p class="eyebrow">Daily Focus</p>
-        <h2 id="focusTitle">今天先学一个词</h2>
-        <p class="muted" id="focusText">页面会按 30 天节奏轮换词汇、练习和每日双练，尽量减少重复。</p>
-        <div class="stats-grid">
-          <div class="mini-stat">
-            <strong id="masteredCount">0</strong>
-            <span>已标记掌握</span>
-          </div>
-          <div class="mini-stat">
-            <strong id="historyCount">0</strong>
-            <span>最近学习词</span>
-          </div>
-          <div class="mini-stat">
-            <strong id="dailyType">双练</strong>
-            <span>今日训练</span>
-          </div>
-          <div class="mini-stat">
-            <strong id="questionType">词汇</strong>
-            <span>当前题型</span>
-          </div>
+        <div class="quick-actions">
+          <button class="button primary" id="continueBtn" type="button">继续上次学习</button>
+          <button class="button secondary" id="jumpWordBtn" type="button">进入单词学习</button>
+          <button class="button secondary" id="jumpPracticeBtn" type="button">进入题目练习</button>
+          <button class="button secondary" id="jumpDailyBtn" type="button">进入每日双练</button>
+        </div>
+      </article>
+
+      <aside class="card hero-side">
+        <p class="eyebrow">Today Snapshot</p>
+        <h2 id="focusTitle">今日学习概览</h2>
+        <p class="section-copy" id="focusText">加载中</p>
+        <div class="summary-grid">
+          <div class="summary-item"><strong id="summaryTodayCount">0</strong><span>今日学习词</span></div>
+          <div class="summary-item"><strong id="summaryMasteredCount">0</strong><span>已掌握</span></div>
+          <div class="summary-item"><strong id="summaryFavoriteCount">0</strong><span>收藏词</span></div>
+          <div class="summary-item"><strong id="summaryWrongCount">0</strong><span>错题记录</span></div>
         </div>
       </aside>
     </section>
 
-    <section class="layout">
-      <section class="zone">
-        <div class="zone-head">
-          <div>
-            <p class="eyebrow">Memory Zone</p>
-            <h2>单词记忆区</h2>
-            <p class="zone-copy">这一部分只放背词相关内容：抽词、释义、例句、查询和最近学习记录，不再和题目混在一起。</p>
-          </div>
-        </div>
-        <div class="zone-panels">
-          <section class="panel">
-          <div class="panel-head">
-            <div>
-              <p class="eyebrow">Word Generator</p>
-              <h2>六级核心词与例句</h2>
-              <p class="muted">扩充到更适合长期使用的词库，并结合搭配、记忆提示和多组例句进行学习。</p>
-            </div>
-            <div class="chip-row">
-              <div class="chip" id="currentLevel">难度：六级高频核心</div>
-              <div class="chip" id="currentTag">主题：词汇积累</div>
-            </div>
-          </div>
+    <nav class="tab-list" aria-label="学习功能区">
+      <button class="tab-button active" data-tab-target="words" type="button">单词学习</button>
+      <button class="tab-button" data-tab-target="practice" type="button">题目练习</button>
+      <button class="tab-button" data-tab-target="daily" type="button">每日双练</button>
+    </nav>
 
-          <article class="word-card">
-            <div class="word-main">
+    <main>
+      <section class="tab-panel active" data-tab-panel="words">
+        <div class="grid-two">
+          <section class="panel">
+            <div class="section-head">
               <div>
-                <div class="word" id="wordText">profound</div>
-                <div class="phonetic" id="wordPhonetic">/prəˈfaʊnd/</div>
+                <p class="eyebrow">Vocabulary</p>
+                <h2>单词学习</h2>
+                <p class="section-copy">聚焦单词、释义、搭配、例句与记忆提示，并同步记录当日学习词、收藏词和复习词。</p>
               </div>
+            </div>
+
+            <article class="word-card">
+              <div class="word-top">
+                <div>
+                  <div class="word-text" id="wordText">加载中</div>
+                  <div class="phonetic" id="wordPhonetic"></div>
+                </div>
+                <div class="word-actions">
+                  <button class="button primary" id="nextWordBtn" type="button">抽取下一个单词</button>
+                  <button class="button secondary" id="toggleMeaningBtn" type="button">显示 / 隐藏释义</button>
+                </div>
+              </div>
+
+              <div class="pill-row">
+                <span class="meta-chip" id="wordLevel">难度：六级高频核心</span>
+                <span class="meta-chip" id="wordTag">主题：加载中</span>
+              </div>
+
               <div class="word-actions">
-                <button class="primary" id="newExampleBtn" type="button">切换例句</button>
-                <button class="secondary" id="masterBtn" type="button">标记已掌握</button>
+                <button class="button ghost" id="nextExampleBtn" type="button">切换例句</button>
+                <button class="button secondary" id="toggleMasteredBtn" type="button">标记已掌握</button>
+                <button class="button secondary" id="toggleFavoriteBtn" type="button">加入收藏</button>
+                <button class="button secondary" id="toggleReviewBtn" type="button">加入复习</button>
+              </div>
+
+              <section class="meaning-block" id="meaningBlock">
+                <strong>单词释义</strong>
+                <div id="wordMeaning"></div>
+                <div class="helper" id="wordCollocation"></div>
+              </section>
+
+              <section class="example-block">
+                <strong>例句</strong>
+                <div class="sentence-en clickable-text" id="exampleEn"></div>
+                <div class="sentence-cn" id="exampleCn"></div>
+                <div class="word-note" id="wordTip"></div>
+              </section>
+            </article>
+
+            <div class="footer-note" id="wordFooterNote">建议顺序：先看释义和搭配，再切换 1-2 组例句，随后加入收藏或复习，最后去做题和完成每日双练。</div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Lookup & Export</p>
+                <h2>查询与导出</h2>
+                <p class="section-copy">支持单词查询、点击句子查词，以及把学习词整理成 Word 文档下载。</p>
               </div>
             </div>
 
-            <div class="meaning-box hidden" id="meaningBox">
-              <strong>单词释义</strong>
-              <div id="wordMeaning"></div>
-              <div class="secondary-copy" id="wordCollocation"></div>
-            </div>
+            <section class="sub-panel">
+              <h3>单词查询</h3>
+              <div class="lookup-form">
+                <label class="visually-hidden" for="lookupInput">输入单词查询</label>
+                <input id="lookupInput" type="text" placeholder="例如：allocate / resilient / facilitate">
+                <button class="button primary" id="lookupBtn" type="button">查询单词</button>
+              </div>
+              <div class="lookup-result" id="lookupResult">
+                <strong>查询结果</strong>
+                <p>输入一个单词，或点击例句、题目、作文中的英文单词，即可在这里查看释义。</p>
+              </div>
+            </section>
 
-            <div class="example-box">
-              <strong>例句</strong>
-              <div class="sentence-en clickable-text" id="exampleEn"></div>
-              <div class="sentence-cn" id="exampleCn"></div>
-              <div class="secondary-copy" id="memoryTip"></div>
-            </div>
-          </article>
+            <section class="export-panel">
+              <strong>导出学习文档</strong>
+              <p class="helper">导出的 Word 文档将按分组整理单词，并包含单词、音标、释义、搭配、记忆提示和例句。</p>
+              <div class="checkbox-list">
+                <label class="checkbox-item"><input id="exportToday" type="checkbox" checked><span>导出当日学习词 <span class="helper" id="exportTodayCount">0 个</span></span></label>
+                <label class="checkbox-item"><input id="exportReview" type="checkbox" checked><span>导出复习词 <span class="helper" id="exportReviewCount">0 个</span></span></label>
+                <label class="checkbox-item"><input id="exportFavorites" type="checkbox" checked><span>导出收藏词 <span class="helper" id="exportFavoriteCount">0 个</span></span></label>
+              </div>
+              <div class="export-actions">
+                <button class="button primary" id="exportDocBtn" type="button">导出 Word 文档</button>
+              </div>
+              <div class="status-box warning" id="exportStatus">
+                <strong>导出提示</strong>
+                <div>请至少勾选一个非空分组后再导出。</div>
+              </div>
+            </section>
+          </section>
+        </div>
 
-          <div class="footer-note">
-            建议每天先学 3-5 个词：先看释义与搭配，再切换 1-2 组例句，最后去做右侧练习和下方每日双练。
-          </div>
+        <div class="grid-two">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Learning Records</p>
+                <h2>学习记录</h2>
+                <p class="section-copy">这里显示最近学习词、收藏词和复习词。点击词条可快速回看。</p>
+              </div>
+            </div>
+            <div class="sub-panel">
+              <h3>最近学习词</h3>
+              <div class="chip-list" id="recentWordsList"></div>
+            </div>
+            <div class="sub-panel">
+              <h3>收藏词</h3>
+              <div class="chip-list" id="favoriteWordsList"></div>
+            </div>
+            <div class="sub-panel">
+              <h3>复习词</h3>
+              <div class="chip-list" id="reviewWordsList"></div>
+            </div>
           </section>
 
-          <section class="panel tight">
-          <div class="panel-head">
-            <div>
-              <p class="eyebrow">Lookup</p>
-              <h2>单词查询</h2>
-              <p class="muted">输入已收录单词，可快速查看释义、搭配、例句和记忆提示。</p>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Today Words</p>
+                <h2>当日学习词</h2>
+                <p class="section-copy">系统会自动记录你当天浏览、抽取或点击查看过的单词，供复习和导出使用。</p>
+              </div>
             </div>
-          </div>
-
-          <div class="lookup-form">
-            <input id="lookupInput" type="text" placeholder="例如：allocate / resilient / facilitate">
-            <button class="primary" id="lookupBtn" type="button">查询单词</button>
-          </div>
-
-          <div class="lookup-result" id="lookupResult">
-            <strong>查询结果</strong>
-            <p>输入单词后点击“查询单词”，这里会显示详细解释。</p>
-          </div>
-
-          <div class="history-list" id="historyList"></div>
+            <div class="sub-panel">
+              <h3>今日清单</h3>
+              <div class="chip-list" id="todayWordsList"></div>
+            </div>
+            <div class="status-box" id="wordStatus">
+              <strong>学习状态</strong>
+              <div>当前还没有新的状态更新。</div>
+            </div>
           </section>
         </div>
       </section>
 
-      <section class="zone">
-        <div class="zone-head">
-          <div>
-            <p class="eyebrow">Practice Zone</p>
-            <h2>题目练习区</h2>
-            <p class="zone-copy">这一部分专门放六级题目和每日双练，和背词区完全分开，做题时不会被单词卡片打断。</p>
-          </div>
-        </div>
-        <div class="zone-panels single">
+      <section class="tab-panel" data-tab-panel="practice">
+        <div class="grid-two">
           <section class="panel">
-          <div class="panel-head">
-            <div>
-              <p class="eyebrow">Practice</p>
-              <h2>六级题目实例</h2>
-              <p class="muted">包含词汇选择、翻译练习、写作思路三类练习，适合连续刷题并减少重复感。</p>
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Practice</p>
+                <h2>题目练习</h2>
+                <p class="section-copy">独立做题，不被单词卡片打断。答错的题会进入错题记录。</p>
+              </div>
+              <div class="question-actions">
+                <button class="button secondary" id="nextQuestionBtn" type="button">换一题</button>
+                <button class="button secondary" id="toggleWrongQuestionBtn" type="button">加入错题记录</button>
+              </div>
             </div>
-            <div class="question-actions">
-              <button class="secondary" id="nextQuestionBtn" type="button">换一题</button>
-            </div>
-          </div>
 
-          <article class="question-card">
-            <h3 id="questionTitle"></h3>
-            <p class="list-text clickable-text" id="questionStem"></p>
-            <div class="option-list" id="optionList"></div>
-            <div class="question-meta" id="questionMeta"></div>
-            <div class="question-explain" id="questionExplain"></div>
-          </article>
+            <article class="question-card">
+              <h3 id="questionTitle">加载中</h3>
+              <p class="question-stem clickable-text" id="questionStem"></p>
+              <div class="option-list" id="optionList"></div>
+              <div class="question-answer-box" id="questionAnswerBox" hidden></div>
+              <div class="question-meta" id="questionMeta"></div>
+              <div class="question-explain" id="questionExplain"></div>
+            </article>
           </section>
 
           <section class="panel">
-          <div class="panel-head">
-            <div>
-              <p class="eyebrow">30-Day Daily Plan</p>
-              <h2>每日翻译 + 作文双练</h2>
-              <p class="muted">按 30 天循环安排每天一条翻译和一篇作文题，打开页面就能练。</p>
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Wrong Questions</p>
+                <h2>错题记录</h2>
+                <p class="section-copy">自动记录做错的选择题，也支持手动把当前题加入错题记录。</p>
+              </div>
             </div>
-            <div class="recommend-actions">
-              <button class="secondary" id="nextRecommendBtn" type="button">看下一天</button>
+            <div class="sub-panel">
+              <h3>错题列表</h3>
+              <div class="chip-list" id="wrongQuestionList"></div>
             </div>
-          </div>
-
-          <article class="recommend-card">
-            <strong id="recommendTitle"></strong>
-            <div class="recommend-meta" id="recommendMeta"></div>
-            <div class="daily-grid">
-              <section class="daily-section">
-                <strong>今日翻译</strong>
-                <div class="recommend-copy clickable-text" id="translationBody"></div>
-              </section>
-              <section class="daily-section">
-                <strong>今日作文</strong>
-                <div class="recommend-copy clickable-text" id="writingBody"></div>
-              </section>
-              <section class="daily-section">
-                <strong>可用表达</strong>
-                <div class="recommend-copy clickable-text" id="recommendBody"></div>
-              </section>
+            <div class="status-box" id="practiceStatus">
+              <strong>练习状态</strong>
+              <div>完成一道题后，这里会显示答题反馈。</div>
             </div>
-          </article>
           </section>
         </div>
       </section>
-    </section>
+
+      <section class="tab-panel" data-tab-panel="daily">
+        <div class="grid-two">
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Daily Plan</p>
+                <h2>每日双练</h2>
+                <p class="section-copy">每天一条翻译、一条作文和一组可用表达，支持继续上次学习位置。</p>
+              </div>
+              <div class="daily-actions">
+                <button class="button secondary" id="nextPlanBtn" type="button">看下一天</button>
+              </div>
+            </div>
+
+            <article class="daily-card">
+              <strong id="dailyTitle">加载中</strong>
+              <div class="daily-meta" id="dailyMeta"></div>
+              <div class="daily-grid">
+                <section class="daily-card"><strong>今日翻译</strong><div class="daily-copy clickable-text" id="dailyTranslation"></div></section>
+                <section class="daily-card"><strong>今日作文</strong><div class="daily-copy clickable-text" id="dailyWriting"></div></section>
+                <section class="daily-card"><strong>可用表达</strong><div class="daily-copy clickable-text" id="dailyTips"></div></section>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Daily Status</p>
+                <h2>今日任务状态</h2>
+                <p class="section-copy">用于确认你今天学了哪些词、当前停留在哪一天，并支持继续。</p>
+              </div>
+            </div>
+            <div class="sub-panel">
+              <h3>当前双练进度</h3>
+              <div class="status-box" id="dailyStatus">
+                <strong>双练状态</strong>
+                <div>正在读取今日计划。</div>
+              </div>
+            </div>
+            <div class="sub-panel">
+              <h3>快捷操作</h3>
+              <div class="quick-actions">
+                <button class="button primary" id="backToWordBtn" type="button">回到单词学习</button>
+                <button class="button secondary" id="backToPracticeBtn" type="button">回到题目练习</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
   </div>
 
   <script src="word-bank.js"></script>
   <script src="study-content.js"></script>
   <script>
-    const WORD_BANK = window.WORD_BANK;
-    const QUESTION_BANK = window.QUESTION_BANK;
-    const DAILY_PLAN_BANK = window.DAILY_PLAN_BANK;
-    const STORAGE_KEY = "cet6-study-companion-v2";
+    (() => {
+      "use strict";
 
-    const todayLabelEl = document.getElementById("todayLabel");
-    const focusTitleEl = document.getElementById("focusTitle");
-    const focusTextEl = document.getElementById("focusText");
-    const masteredCountEl = document.getElementById("masteredCount");
-    const historyCountEl = document.getElementById("historyCount");
-    const dailyTypeEl = document.getElementById("dailyType");
-    const questionTypeEl = document.getElementById("questionType");
-    const currentLevelEl = document.getElementById("currentLevel");
-    const currentTagEl = document.getElementById("currentTag");
-    const wordTextEl = document.getElementById("wordText");
-    const wordPhoneticEl = document.getElementById("wordPhonetic");
-    const meaningBoxEl = document.getElementById("meaningBox");
-    const wordMeaningEl = document.getElementById("wordMeaning");
-    const wordCollocationEl = document.getElementById("wordCollocation");
-    const exampleEnEl = document.getElementById("exampleEn");
-    const exampleCnEl = document.getElementById("exampleCn");
-    const memoryTipEl = document.getElementById("memoryTip");
-    const lookupInputEl = document.getElementById("lookupInput");
-    const lookupResultEl = document.getElementById("lookupResult");
-    const historyListEl = document.getElementById("historyList");
-    const recommendTitleEl = document.getElementById("recommendTitle");
-    const recommendBodyEl = document.getElementById("recommendBody");
-    const recommendMetaEl = document.getElementById("recommendMeta");
-    const translationBodyEl = document.getElementById("translationBody");
-    const writingBodyEl = document.getElementById("writingBody");
-    const questionTitleEl = document.getElementById("questionTitle");
-    const questionStemEl = document.getElementById("questionStem");
-    const optionListEl = document.getElementById("optionList");
-    const questionMetaEl = document.getElementById("questionMeta");
-    const questionExplainEl = document.getElementById("questionExplain");
+      const WORD_BANK = Array.isArray(window.WORD_BANK) ? window.WORD_BANK : [];
+      const QUESTION_BANK = Array.isArray(window.QUESTION_BANK) ? window.QUESTION_BANK : [];
+      const DAILY_PLAN_BANK = Array.isArray(window.DAILY_PLAN_BANK) ? window.DAILY_PLAN_BANK : [];
+      const STORAGE_KEY = "cet6-study-hub-v3";
+      const MAX_RECENT_WORDS = 16;
 
-    const state = loadState();
-    const dailyIndex = getDailyIndex();
-    const WORD_ORDER = buildSeededOrder(WORD_BANK.length, 17);
-    const QUESTION_ORDER = buildSeededOrder(QUESTION_BANK.length, 53);
-
-    let currentWordIndex = 0;
-    let currentWord = WORD_BANK[0];
-    let currentExampleIndex = 0;
-    let currentQuestionIndex = 0;
-    let currentQuestion = QUESTION_BANK[0];
-    let currentPlanIndex = dailyIndex;
-
-    document.getElementById("generateWordBtn").addEventListener("click", () => {
-      chooseNextWord(true);
-    });
-
-    document.getElementById("showMeaningBtn").addEventListener("click", () => {
-      meaningBoxEl.classList.toggle("hidden");
-    });
-
-    document.getElementById("newExampleBtn").addEventListener("click", () => {
-      if (!currentWord.examples.length) return;
-      currentExampleIndex = (currentExampleIndex + 1) % currentWord.examples.length;
-      renderExample();
-    });
-
-    document.getElementById("masterBtn").addEventListener("click", () => {
-      state.mastered[currentWord.word] = true;
-      saveState();
-      renderStats();
-      focusTextEl.textContent = `已将 ${currentWord.word} 加入掌握清单，可以继续抽取下一个词。`;
-    });
-
-    document.getElementById("lookupBtn").addEventListener("click", handleLookup);
-    lookupInputEl.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        handleLookup();
-      }
-    });
-
-    document.addEventListener("click", (event) => {
-      const target = event.target.closest("[data-word]");
-      if (!target) return;
-      const found = findWord(target.dataset.word || "");
-      if (!found) return;
-      selectWord(found, true);
-    });
-
-    document.getElementById("nextQuestionBtn").addEventListener("click", () => {
-      chooseNextQuestion(true);
-    });
-
-    document.getElementById("nextRecommendBtn").addEventListener("click", () => {
-      currentPlanIndex = (currentPlanIndex + 1) % DAILY_PLAN_BANK.length;
-      renderRecommendation();
-      renderStats();
-    });
-
-    init();
-
-    function init() {
-      todayLabelEl.textContent = formatToday();
-      currentPlanIndex = dailyIndex;
-      chooseInitialWord();
-      chooseInitialQuestion();
-      renderWord(false);
-      renderQuestion();
-      renderRecommendation();
-      renderHistory();
-      renderStats();
-      showLookupResult(currentWord);
-    }
-
-    function chooseInitialWord() {
-      const saved = WORD_BANK.findIndex((item) => item.word === state.lastWord);
-      if (saved >= 0) {
-        currentWordIndex = saved;
-      } else {
-        currentWordIndex = WORD_ORDER[dailyIndex % WORD_ORDER.length];
-      }
-      currentWord = WORD_BANK[currentWordIndex];
-      currentExampleIndex = 0;
-    }
-
-    function chooseInitialQuestion() {
-      currentQuestionIndex = QUESTION_ORDER[dailyIndex % QUESTION_ORDER.length];
-      currentQuestion = QUESTION_BANK[currentQuestionIndex];
-    }
-
-    function renderWord(forceShowMeaning) {
-      wordTextEl.textContent = currentWord.word;
-      wordPhoneticEl.textContent = currentWord.phonetic;
-      wordMeaningEl.textContent = currentWord.meaning;
-      wordCollocationEl.textContent = `常见搭配：${currentWord.collocation}`;
-      currentLevelEl.textContent = `难度：六级高频核心（共 ${WORD_BANK.length} 词）`;
-      currentTagEl.textContent = `主题：${currentWord.tag}`;
-      memoryTipEl.textContent = `记忆提示：${currentWord.tip}`;
-      focusTitleEl.textContent = `今日词汇：${currentWord.word}`;
-      focusTextEl.textContent = `建议先掌握 ${currentWord.word} 的释义和搭配，再做一道 ${currentQuestion.type}，最后完成今天的翻译和作文双练。`;
-      if (forceShowMeaning) {
-        meaningBoxEl.classList.remove("hidden");
-      }
-      renderExample();
-    }
-
-    function renderExample() {
-      const example = currentWord.examples[currentExampleIndex] || ["No example.", ""];
-      exampleEnEl.innerHTML = linkifyKnownWords(example[0]);
-      exampleCnEl.textContent = example[1];
-    }
-
-    function renderQuestion() {
-      questionTitleEl.textContent = currentQuestion.title;
-      questionStemEl.innerHTML = linkifyKnownWords(currentQuestion.stem).replaceAll("\n", "<br>");
-      questionMetaEl.textContent = `题型：${currentQuestion.type} · 题库总量：${QUESTION_BANK.length}`;
-      questionExplainEl.textContent = "";
-      questionTypeEl.textContent = currentQuestion.type.replace("练习", "").replace("思路", "");
-      optionListEl.innerHTML = "";
-
-      if (!currentQuestion.options.length) {
-        const answerBox = document.createElement("div");
-        answerBox.className = "meaning-box";
-        answerBox.innerHTML = `<strong>参考方向</strong><div class="clickable-text">${linkifyKnownWords(currentQuestion.answer).replaceAll("\n", "<br>")}</div>`;
-        optionListEl.appendChild(answerBox);
-        questionExplainEl.textContent = currentQuestion.explain;
+      if (!WORD_BANK.length || !QUESTION_BANK.length || !DAILY_PLAN_BANK.length) {
+        document.body.innerHTML = '<div style="padding:24px;font-family:Segoe UI,Microsoft YaHei,sans-serif;color:#2e251d;"><h1>数据加载失败</h1><p>请确认 <code>word-bank.js</code> 和 <code>study-content.js</code> 已上传到同一目录，并且文件内容完整。</p></div>';
         return;
       }
 
-      currentQuestion.options.forEach((option) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "option";
-        button.textContent = option;
-        button.addEventListener("click", () => {
-          const isCorrect = option === currentQuestion.answer;
-          Array.from(optionListEl.children).forEach((node) => {
-            const text = node.textContent;
-            node.classList.remove("correct", "wrong");
-            if (text === currentQuestion.answer) {
-              node.classList.add("correct");
-            } else if (text === option && !isCorrect) {
-              node.classList.add("wrong");
-            }
-          });
-          questionExplainEl.textContent = `${isCorrect ? "回答正确。" : "这题选错了。"} ${currentQuestion.explain}`;
+      const crcTable = buildCrcTable();
+      const state = loadState();
+      const dailySeed = getDailyIndex();
+      const todayKey = getTodayKey();
+      const WORD_ORDER = buildSeededOrder(WORD_BANK.length, 17);
+      const QUESTION_ORDER = buildSeededOrder(QUESTION_BANK.length, 53);
+
+      let activeTab = state.lastVisitedTab || "words";
+      let currentWordIndex = 0;
+      let currentWord = WORD_BANK[0];
+      let currentExampleIndex = 0;
+      let currentQuestionIndex = 0;
+      let currentQuestion = QUESTION_BANK[0];
+      let currentPlanIndex = getInitialPlanIndex();
+      let isMeaningVisible = true;
+
+      const el = mapElements([
+        "todayLabel", "todayFocus", "heroMessage", "focusTitle", "focusText",
+        "summaryTodayCount", "summaryMasteredCount", "summaryFavoriteCount", "summaryWrongCount",
+        "wordText", "wordPhonetic", "wordLevel", "wordTag", "wordMeaning", "wordCollocation",
+        "exampleEn", "exampleCn", "wordTip", "meaningBlock", "lookupInput", "lookupResult",
+        "exportToday", "exportReview", "exportFavorites", "exportTodayCount", "exportReviewCount",
+        "exportFavoriteCount", "exportStatus", "recentWordsList", "favoriteWordsList",
+        "reviewWordsList", "todayWordsList", "questionTitle", "questionStem", "optionList",
+        "questionAnswerBox", "questionMeta", "questionExplain", "wrongQuestionList",
+        "practiceStatus", "dailyTitle", "dailyMeta", "dailyTranslation", "dailyWriting",
+        "dailyTips", "dailyStatus", "wordStatus"
+      ]);
+
+      bindStaticEvents();
+      init();
+
+      function init() {
+        el.todayLabel.textContent = formatToday();
+        el.todayFocus.textContent = "今日目标：学词、做题、完成双练";
+        chooseInitialWord();
+        chooseInitialQuestion();
+        ensureTodayBucket();
+        state.currentQuestionId = currentQuestion.id;
+        state.currentPlanIndex = currentPlanIndex;
+        state.lastVisitedTab = activeTab;
+        saveState();
+        renderAll();
+      }
+
+      function bindStaticEvents() {
+        document.querySelectorAll("[data-tab-target]").forEach((button) => {
+          button.addEventListener("click", () => setActiveTab(button.dataset.tabTarget || "words"));
         });
-        optionListEl.appendChild(button);
-      });
-    }
 
-    function renderRecommendation() {
-      const plan = DAILY_PLAN_BANK[currentPlanIndex];
-      recommendTitleEl.textContent = `${plan.title}`;
-      recommendMetaEl.textContent = `30 天循环计划 · 第 ${plan.day} / ${DAILY_PLAN_BANK.length} 天`;
-      translationBodyEl.innerHTML = linkifyKnownWords(plan.translation).replaceAll("\n", "<br>");
-      writingBodyEl.innerHTML = linkifyKnownWords(plan.writing).replaceAll("\n", "<br>");
-      recommendBodyEl.innerHTML = linkifyKnownWords(plan.tips).replaceAll("\n", "<br>");
-      dailyTypeEl.textContent = `双练 ${plan.day}`;
-    }
+        document.getElementById("continueBtn").addEventListener("click", continueLastLearning);
+        document.getElementById("jumpWordBtn").addEventListener("click", () => setActiveTab("words"));
+        document.getElementById("jumpPracticeBtn").addEventListener("click", () => setActiveTab("practice"));
+        document.getElementById("jumpDailyBtn").addEventListener("click", () => setActiveTab("daily"));
+        document.getElementById("backToWordBtn").addEventListener("click", () => setActiveTab("words"));
+        document.getElementById("backToPracticeBtn").addEventListener("click", () => setActiveTab("practice"));
 
-    function renderHistory() {
-      historyListEl.innerHTML = "";
-      if (!state.history.length) {
-        const tip = document.createElement("div");
-        tip.className = "muted";
-        tip.textContent = "最近学习词会显示在这里，点击即可快速回看。";
-        historyListEl.appendChild(tip);
-        return;
-      }
+        document.getElementById("nextWordBtn").addEventListener("click", () => {
+          chooseNextWord();
+          renderWordSection(true);
+          renderDashboard();
+          renderWordLists();
+          renderExportPanel();
+        });
 
-      state.history.forEach((word) => {
-        const item = document.createElement("button");
-        item.type = "button";
-        item.className = "history-item";
-        item.textContent = word;
-        item.addEventListener("click", () => {
-          const found = findWord(word);
+        document.getElementById("toggleMeaningBtn").addEventListener("click", () => {
+          isMeaningVisible = !isMeaningVisible;
+          renderWordSection(false);
+        });
+
+        document.getElementById("nextExampleBtn").addEventListener("click", () => {
+          if (!currentWord.examples.length) return;
+          currentExampleIndex = (currentExampleIndex + 1) % currentWord.examples.length;
+          renderWordSection(false);
+        });
+
+        document.getElementById("toggleMasteredBtn").addEventListener("click", () => {
+          toggleWordFlag("mastered", currentWord.word);
+          renderWordSection(false);
+          renderDashboard();
+          renderWordStatus(`${currentWord.word} 的掌握状态已更新。`, "success");
+        });
+
+        document.getElementById("toggleFavoriteBtn").addEventListener("click", () => {
+          const active = toggleWordFlag("favoriteWords", currentWord.word);
+          renderWordSection(false);
+          renderDashboard();
+          renderWordLists();
+          renderExportPanel();
+          renderWordStatus(active ? `${currentWord.word} 已加入收藏。` : `${currentWord.word} 已移出收藏。`, "success");
+        });
+
+        document.getElementById("toggleReviewBtn").addEventListener("click", () => {
+          const active = toggleWordFlag("reviewWords", currentWord.word);
+          renderWordSection(false);
+          renderWordLists();
+          renderExportPanel();
+          renderWordStatus(active ? `${currentWord.word} 已加入复习。` : `${currentWord.word} 已移出复习。`, "success");
+        });
+
+        document.getElementById("lookupBtn").addEventListener("click", handleLookup);
+        el.lookupInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") handleLookup();
+        });
+
+        document.addEventListener("click", (event) => {
+          const target = event.target.closest("[data-word]");
+          if (!target) return;
+          const found = findWord(target.dataset.word || "");
           if (!found) return;
-          currentWord = found;
-          currentWordIndex = WORD_BANK.findIndex((itemWord) => itemWord.word === found.word);
-          currentExampleIndex = 0;
-          renderWord(true);
+          selectWord(found, true);
         });
-        historyListEl.appendChild(item);
-      });
-    }
 
-    function renderStats() {
-      masteredCountEl.textContent = String(Object.keys(state.mastered).length);
-      historyCountEl.textContent = String(state.history.length);
-    }
+        document.getElementById("nextQuestionBtn").addEventListener("click", () => {
+          chooseNextQuestion();
+          renderQuestionSection();
+          saveState();
+        });
 
-    function handleLookup() {
-      const keyword = lookupInputEl.value.trim().toLowerCase();
-      if (!keyword) {
-        lookupResultEl.innerHTML = "<strong>查询结果</strong><p>请输入一个单词再查询。</p>";
-        return;
+        document.getElementById("toggleWrongQuestionBtn").addEventListener("click", () => {
+          const active = toggleQuestionFlag(currentQuestion.id);
+          renderQuestionSection();
+          renderWrongQuestionList();
+          renderDashboard();
+          renderPracticeStatus(active ? "当前题已加入错题记录。" : "当前题已从错题记录移除。", "success");
+        });
+
+        document.getElementById("nextPlanBtn").addEventListener("click", () => {
+          currentPlanIndex = (currentPlanIndex + 1) % DAILY_PLAN_BANK.length;
+          state.currentPlanIndex = currentPlanIndex;
+          saveState();
+          renderDailySection();
+        });
+
+        document.getElementById("exportDocBtn").addEventListener("click", handleExportDocx);
       }
 
-      const found = findWord(keyword);
-      if (!found) {
-        lookupResultEl.innerHTML = `<strong>查询结果</strong><p>未找到 <b>${escapeHtml(keyword)}</b>。可以试试 allocate、resilient、facilitate、coherent。</p>`;
-        return;
+      function renderAll() {
+        renderTabs();
+        renderDashboard();
+        renderWordSection(true);
+        renderWordLists();
+        renderLookupResult();
+        renderExportPanel();
+        renderQuestionSection();
+        renderWrongQuestionList();
+        renderDailySection();
       }
 
-      selectWord(found, false);
-    }
+      function renderTabs() {
+        document.querySelectorAll("[data-tab-target]").forEach((button) => {
+          button.classList.toggle("active", button.dataset.tabTarget === activeTab);
+        });
+        document.querySelectorAll("[data-tab-panel]").forEach((panel) => {
+          panel.classList.toggle("active", panel.dataset.tabPanel === activeTab);
+        });
+      }
 
-    function chooseNextWord(syncUI) {
-      currentWordIndex = findNextWordIndex(currentWordIndex);
-      currentWord = WORD_BANK[currentWordIndex];
-      currentExampleIndex = 0;
-      state.lastWord = currentWord.word;
-      pushHistory(currentWord.word);
-      saveState();
-      if (syncUI) {
-        renderWord(true);
-        renderHistory();
-        renderStats();
+      function renderDashboard() {
+        const todayWords = getTodayWords();
+        const masteredCount = countFlags(state.mastered);
+        const favoriteCount = countFlags(state.favoriteWords);
+        const wrongCount = countFlags(state.wrongQuestions);
+
+        el.summaryTodayCount.textContent = String(todayWords.length);
+        el.summaryMasteredCount.textContent = String(masteredCount);
+        el.summaryFavoriteCount.textContent = String(favoriteCount);
+        el.summaryWrongCount.textContent = String(wrongCount);
+
+        el.focusTitle.textContent = currentWord ? `今日主词：${currentWord.word}` : "今日学习概览";
+        el.focusText.textContent = `今天已学习 ${todayWords.length} 个单词，收藏 ${favoriteCount} 个，记录错题 ${wrongCount} 道。最近学习词：${state.lastWord || "暂无"}。`;
+        el.heroMessage.textContent = `当前词汇库 ${WORD_BANK.length} 词，题库 ${QUESTION_BANK.length} 题，双练计划 ${DAILY_PLAN_BANK.length} 天。`;
+      }
+
+      function renderWordSection(showLookup) {
+        el.wordText.textContent = currentWord.word;
+        el.wordPhonetic.textContent = currentWord.phonetic || "";
+        el.wordLevel.textContent = `难度：六级高频核心（共 ${WORD_BANK.length} 词）`;
+        el.wordTag.textContent = `主题：${currentWord.tag || "未分类"}`;
+        el.wordMeaning.textContent = currentWord.meaning || "暂无释义";
+        el.wordCollocation.textContent = `常见搭配：${currentWord.collocation || "暂无"}`;
+        el.wordTip.textContent = `记忆提示：${currentWord.tip || "暂无"}`;
+        el.meaningBlock.classList.toggle("hidden", !isMeaningVisible);
+        updateWordActionButtons();
+        renderExample();
+        if (showLookup) showLookupResult(currentWord);
+      }
+
+      function renderExample() {
+        const example = currentWord.examples[currentExampleIndex] || ["暂无例句。", ""];
+        el.exampleEn.innerHTML = linkifyKnownWords(example[0]);
+        el.exampleCn.textContent = example[1] || "";
+      }
+
+      function updateWordActionButtons() {
+        syncToggleButton("toggleMasteredBtn", state.mastered[currentWord.word], "取消已掌握", "标记已掌握");
+        syncToggleButton("toggleFavoriteBtn", state.favoriteWords[currentWord.word], "移出收藏", "加入收藏");
+        syncToggleButton("toggleReviewBtn", state.reviewWords[currentWord.word], "移出复习", "加入复习");
+      }
+
+      function renderWordLists() {
+        renderWordChipList(el.recentWordsList, state.recentWords, "最近还没有学习记录。");
+        renderWordChipList(el.favoriteWordsList, Object.keys(state.favoriteWords).filter((word) => state.favoriteWords[word]), "还没有收藏词。");
+        renderWordChipList(el.reviewWordsList, Object.keys(state.reviewWords).filter((word) => state.reviewWords[word]), "还没有复习词。");
+        renderWordChipList(el.todayWordsList, getTodayWords(), "今天还没有新的学习词。");
+      }
+
+      function renderWordChipList(container, words, emptyText) {
+        container.innerHTML = "";
+        const filtered = words.filter(Boolean);
+        if (!filtered.length) {
+          container.appendChild(makeEmptyChip(emptyText));
+          return;
+        }
+        filtered.forEach((word) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "chip-button";
+          button.textContent = word;
+          button.addEventListener("click", () => {
+            const found = findWord(word);
+            if (!found) return;
+            selectWord(found, true);
+            setActiveTab("words");
+          });
+          container.appendChild(button);
+        });
+      }
+
+      function renderLookupResult() {
         showLookupResult(currentWord);
       }
-    }
 
-    function chooseNextQuestion(syncUI) {
-      currentQuestionIndex = findNextQuestionIndex(currentQuestionIndex);
-      currentQuestion = QUESTION_BANK[currentQuestionIndex];
-      saveState();
-      if (syncUI) {
-        renderQuestion();
+      function showLookupResult(found) {
+        if (!found) {
+          el.lookupResult.innerHTML = "<strong>查询结果</strong><p>没有可显示的单词。</p>";
+          return;
+        }
+
+        const firstExample = found.examples[0] || ["暂无例句。", ""];
+        el.lookupResult.innerHTML = [
+          `<strong>${escapeHtml(found.word)} ${escapeHtml(found.phonetic || "")}</strong>`,
+          `<p>${escapeHtml(found.meaning || "暂无释义")}</p>`,
+          `<p>常见搭配：${linkifyKnownWords(found.collocation || "暂无")}</p>`,
+          `<p>例句：${linkifyKnownWords(firstExample[0] || "暂无")}</p>`,
+          `<p>例句译文：${escapeHtml(firstExample[1] || "暂无")}</p>`,
+          `<p>记忆提示：${escapeHtml(found.tip || "暂无")}</p>`
+        ].join("");
       }
-    }
 
-    function findNextWordIndex(fromIndex) {
-      const recent = new Set(state.history.slice(0, 12));
-      const masteredWords = new Set(Object.keys(state.mastered));
-      let fallback = (fromIndex + 1) % WORD_BANK.length;
+      function renderExportPanel() {
+        const todayCount = getTodayWords().length;
+        const reviewCount = countFlags(state.reviewWords);
+        const favoriteCount = countFlags(state.favoriteWords);
+        el.exportTodayCount.textContent = `${todayCount} 个`;
+        el.exportReviewCount.textContent = `${reviewCount} 个`;
+        el.exportFavoriteCount.textContent = `${favoriteCount} 个`;
+        const hasAny = todayCount || reviewCount || favoriteCount;
+        renderStatusBox(el.exportStatus, hasAny ? "可按勾选范围导出 Word 文档。" : "当前三个分组都为空，暂时无法导出。", hasAny ? "warning" : "error", "导出提示");
+      }
 
-      for (let step = 1; step <= WORD_BANK.length; step += 1) {
-        const idx = (fromIndex + step) % WORD_BANK.length;
-        const candidate = WORD_BANK[idx];
-        if (!recent.has(candidate.word) && !masteredWords.has(candidate.word)) {
-          return idx;
+      function renderQuestionSection() {
+        el.questionTitle.textContent = currentQuestion.title || "题目";
+        el.questionStem.innerHTML = linkifyKnownWords(String(currentQuestion.stem || "")).replaceAll("\n", "<br>");
+        el.questionMeta.textContent = `题型：${currentQuestion.type || "未分类"} · 题库总量：${QUESTION_BANK.length} · 当前题号：${currentQuestionIndex + 1}`;
+        el.questionExplain.textContent = "";
+        el.questionAnswerBox.hidden = true;
+        el.questionAnswerBox.innerHTML = "";
+        syncToggleButton("toggleWrongQuestionBtn", state.wrongQuestions[currentQuestion.id], "移出错题记录", "加入错题记录");
+        el.optionList.innerHTML = "";
+
+        if (!Array.isArray(currentQuestion.options) || !currentQuestion.options.length) {
+          el.questionAnswerBox.hidden = false;
+          el.questionAnswerBox.innerHTML = `<strong>参考内容</strong><div class="clickable-text">${linkifyKnownWords(String(currentQuestion.answer || "")).replaceAll("\n", "<br>")}</div>`;
+          el.questionExplain.textContent = currentQuestion.explain || "";
+          return;
+        }
+
+        currentQuestion.options.forEach((option) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "option";
+          button.textContent = option;
+          button.addEventListener("click", () => handleQuestionAnswer(option));
+          el.optionList.appendChild(button);
+        });
+      }
+
+      function renderWrongQuestionList() {
+        el.wrongQuestionList.innerHTML = "";
+        const wrongIds = Object.keys(state.wrongQuestions).filter((id) => state.wrongQuestions[id]);
+        if (!wrongIds.length) {
+          el.wrongQuestionList.appendChild(makeEmptyChip("当前没有错题记录。"));
+          return;
+        }
+
+        wrongIds.map((id) => QUESTION_BANK.find((item) => item.id === id)).filter(Boolean).forEach((question) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "chip-button";
+          button.textContent = question.title;
+          button.addEventListener("click", () => {
+            const index = QUESTION_BANK.findIndex((item) => item.id === question.id);
+            if (index === -1) return;
+            currentQuestionIndex = index;
+            currentQuestion = QUESTION_BANK[currentQuestionIndex];
+            state.currentQuestionId = currentQuestion.id;
+            saveState();
+            renderQuestionSection();
+            setActiveTab("practice");
+          });
+          el.wrongQuestionList.appendChild(button);
+        });
+      }
+
+      function renderDailySection() {
+        const plan = DAILY_PLAN_BANK[currentPlanIndex];
+        el.dailyTitle.textContent = plan.title || `第 ${plan.day} 天`;
+        el.dailyMeta.textContent = `30 天循环计划 · 第 ${plan.day} / ${DAILY_PLAN_BANK.length} 天`;
+        el.dailyTranslation.innerHTML = linkifyKnownWords(String(plan.translation || "")).replaceAll("\n", "<br>");
+        el.dailyWriting.innerHTML = linkifyKnownWords(String(plan.writing || "")).replaceAll("\n", "<br>");
+        el.dailyTips.innerHTML = linkifyKnownWords(String(plan.tips || "")).replaceAll("\n", "<br>");
+        renderStatusBox(el.dailyStatus, `当前停留在第 ${plan.day} 天。刷新页面后会继续从这里开始。`, "success", "双练状态");
+      }
+
+      function continueLastLearning() {
+        if (state.lastVisitedTab) setActiveTab(state.lastVisitedTab);
+        if (state.lastWord) {
+          const found = findWord(state.lastWord);
+          if (found) selectWord(found, false);
+        }
+        renderPracticeStatus("已恢复最近一次学习位置。", "success");
+      }
+
+      function handleLookup() {
+        const keyword = el.lookupInput.value.trim();
+        if (!keyword) {
+          el.lookupResult.innerHTML = "<strong>查询结果</strong><p>请输入一个单词再查询。</p>";
+          return;
+        }
+
+        const found = findWord(keyword);
+        if (!found) {
+          el.lookupResult.innerHTML = `<strong>查询结果</strong><p>未找到 <b>${escapeHtml(keyword)}</b>。可以试试 allocate、resilient、facilitate、coherent。</p>`;
+          return;
+        }
+
+        selectWord(found, true);
+        setActiveTab("words");
+      }
+
+      function handleQuestionAnswer(option) {
+        const isCorrect = option === currentQuestion.answer;
+        Array.from(el.optionList.children).forEach((node) => {
+          const isAnswer = node.textContent === currentQuestion.answer;
+          const isChosen = node.textContent === option;
+          node.classList.remove("correct", "wrong");
+          node.disabled = true;
+          if (isAnswer) node.classList.add("correct");
+          if (isChosen && !isCorrect) node.classList.add("wrong");
+        });
+
+        if (!isCorrect) {
+          state.wrongQuestions[currentQuestion.id] = true;
+          saveState();
+          renderWrongQuestionList();
+          renderDashboard();
+        }
+
+        el.questionExplain.textContent = `${isCorrect ? "回答正确。" : "这题答错了。"} ${currentQuestion.explain || ""}`;
+        renderPracticeStatus(isCorrect ? "本题回答正确。" : "本题已加入错题记录。", isCorrect ? "success" : "error");
+        syncToggleButton("toggleWrongQuestionBtn", state.wrongQuestions[currentQuestion.id], "移出错题记录", "加入错题记录");
+      }
+
+      async function handleExportDocx() {
+        const groups = buildExportGroups();
+        if (!groups.length) {
+          renderStatusBox(el.exportStatus, "没有可导出的内容。请至少勾选一个非空分组。", "error", "导出提示");
+          return;
+        }
+
+        try {
+          const blob = await buildDocxBlob(groups);
+          const fileName = `六级学习清单_${todayKey}.docx`;
+          downloadBlob(blob, fileName);
+          renderStatusBox(el.exportStatus, `已生成 ${fileName}，可直接用 Word 或 WPS 打开。`, "success", "导出完成");
+        } catch (error) {
+          renderStatusBox(el.exportStatus, `导出失败：${error && error.message ? error.message : "未知错误"}`, "error", "导出失败");
         }
       }
 
-      for (let step = 1; step <= WORD_BANK.length; step += 1) {
-        const idx = (fromIndex + step) % WORD_BANK.length;
-        const candidate = WORD_BANK[idx];
-        if (!recent.has(candidate.word)) {
-          return idx;
+      function buildExportGroups() {
+        const groups = [];
+        if (el.exportToday.checked) {
+          const words = getTodayWords().map(findWord).filter(Boolean);
+          if (words.length) groups.push({ title: "当日学习单词", words });
         }
+        if (el.exportReview.checked) {
+          const words = Object.keys(state.reviewWords).filter((word) => state.reviewWords[word]).map(findWord).filter(Boolean);
+          if (words.length) groups.push({ title: "复习单词", words });
+        }
+        if (el.exportFavorites.checked) {
+          const words = Object.keys(state.favoriteWords).filter((word) => state.favoriteWords[word]).map(findWord).filter(Boolean);
+          if (words.length) groups.push({ title: "收藏词", words });
+        }
+        return groups;
       }
 
-      return fallback;
-    }
-
-    function findNextQuestionIndex(fromIndex) {
-      const fromOrderIndex = QUESTION_ORDER.indexOf(fromIndex);
-      if (fromOrderIndex === -1) {
-        return QUESTION_ORDER[0];
+      function chooseInitialWord() {
+        const savedIndex = WORD_BANK.findIndex((item) => item.word === state.lastWord);
+        currentWordIndex = savedIndex >= 0 ? savedIndex : WORD_ORDER[dailySeed % WORD_ORDER.length];
+        currentWord = WORD_BANK[currentWordIndex];
+        currentExampleIndex = 0;
+        recordWordView(currentWord.word);
       }
-      return QUESTION_ORDER[(fromOrderIndex + 1) % QUESTION_ORDER.length];
-    }
 
-    function pushHistory(word) {
-      state.history = [word, ...state.history.filter((item) => item !== word)].slice(0, 12);
-    }
+      function chooseNextWord() {
+        currentWordIndex = findNextWordIndex(currentWordIndex);
+        currentWord = WORD_BANK[currentWordIndex];
+        currentExampleIndex = 0;
+        recordWordView(currentWord.word);
+      }
 
-    function findWord(word) {
-      return WORD_BANK.find((item) => item.word.toLowerCase() === word.toLowerCase());
-    }
+      function chooseInitialQuestion() {
+        const savedIndex = QUESTION_BANK.findIndex((item) => item.id === state.currentQuestionId);
+        currentQuestionIndex = savedIndex >= 0 ? savedIndex : QUESTION_ORDER[dailySeed % QUESTION_ORDER.length];
+        currentQuestion = QUESTION_BANK[currentQuestionIndex];
+      }
 
-    function selectWord(found, syncMainWord) {
-      pushHistory(found.word);
-      saveState();
-      renderHistory();
-      renderStats();
-      showLookupResult(found);
-      lookupInputEl.value = found.word;
-      if (syncMainWord) {
+      function chooseNextQuestion() {
+        const currentOrderIndex = QUESTION_ORDER.indexOf(currentQuestionIndex);
+        currentQuestionIndex = QUESTION_ORDER[(currentOrderIndex + 1 + QUESTION_ORDER.length) % QUESTION_ORDER.length];
+        currentQuestion = QUESTION_BANK[currentQuestionIndex];
+        state.currentQuestionId = currentQuestion.id;
+      }
+
+      function findNextWordIndex(fromIndex) {
+        const recent = new Set(state.recentWords.slice(0, 10));
+        const mastered = new Set(Object.keys(state.mastered).filter((word) => state.mastered[word]));
+        for (let step = 1; step <= WORD_BANK.length; step += 1) {
+          const nextIndex = (fromIndex + step) % WORD_BANK.length;
+          const candidate = WORD_BANK[nextIndex];
+          if (!recent.has(candidate.word) && !mastered.has(candidate.word)) return nextIndex;
+        }
+        return (fromIndex + 1) % WORD_BANK.length;
+      }
+
+      function selectWord(found, showLookup) {
+        recordWordView(found.word);
         currentWord = found;
         currentWordIndex = WORD_BANK.findIndex((item) => item.word === found.word);
         currentExampleIndex = 0;
-        renderWord(true);
+        el.lookupInput.value = found.word;
+        renderWordSection(showLookup);
+        renderWordLists();
+        renderDashboard();
+        renderExportPanel();
+        setActiveTab("words", false);
       }
-    }
 
-    function showLookupResult(found) {
-      lookupResultEl.innerHTML = `
-        <strong>${escapeHtml(found.word)} ${escapeHtml(found.phonetic)}</strong>
-        <p>${escapeHtml(found.meaning)}</p>
-        <p>常见搭配：${linkifyKnownWords(found.collocation)}</p>
-        <p>例句：${linkifyKnownWords(found.examples[0][0])}</p>
-        <p>例句译文：${escapeHtml(found.examples[0][1])}</p>
-        <p>记忆提示：${escapeHtml(found.tip)}</p>
-      `;
-    }
+      function recordWordView(word) {
+        ensureTodayBucket();
+        state.dailyWords[todayKey] = addUniqueFront(state.dailyWords[todayKey], word, WORD_BANK.length);
+        state.recentWords = addUniqueFront(state.recentWords, word, MAX_RECENT_WORDS);
+        state.lastWord = word;
+        saveState();
+      }
 
-    function linkifyKnownWords(text) {
-      const escaped = escapeHtml(String(text));
-      return escaped.replace(/[A-Za-z][A-Za-z'-]*/g, (token) => {
-        const found = findWord(token);
-        if (!found) {
-          return token;
+      function ensureTodayBucket() {
+        if (!state.dailyWords[todayKey]) state.dailyWords[todayKey] = [];
+      }
+
+      function getTodayWords() {
+        ensureTodayBucket();
+        return state.dailyWords[todayKey].slice();
+      }
+
+      function getInitialPlanIndex() {
+        if (Number.isInteger(state.currentPlanIndex) && state.currentPlanIndex >= 0 && state.currentPlanIndex < DAILY_PLAN_BANK.length) {
+          return state.currentPlanIndex;
         }
-        return `<span class="vocab-link" data-word="${escapeHtml(found.word)}" title="点击查看 ${escapeHtml(found.word)} 的释义">${token}</span>`;
-      });
-    }
+        return dailySeed % DAILY_PLAN_BANK.length;
+      }
 
-    function loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) {
-          return { mastered: {}, history: [], lastWord: "" };
+      function setActiveTab(tab, persist = true) {
+        activeTab = tab;
+        if (persist) {
+          state.lastVisitedTab = tab;
+          saveState();
         }
-        const parsed = JSON.parse(raw);
-        return {
-          mastered: parsed.mastered && typeof parsed.mastered === "object" ? parsed.mastered : {},
-          history: Array.isArray(parsed.history) ? parsed.history.slice(0, 12) : [],
-          lastWord: parsed.lastWord || ""
+        renderTabs();
+      }
+
+      function toggleWordFlag(key, word) {
+        const currentValue = Boolean(state[key][word]);
+        state[key][word] = !currentValue;
+        if (!state[key][word]) delete state[key][word];
+        saveState();
+        return !currentValue;
+      }
+
+      function toggleQuestionFlag(questionId) {
+        const currentValue = Boolean(state.wrongQuestions[questionId]);
+        state.wrongQuestions[questionId] = !currentValue;
+        if (!state.wrongQuestions[questionId]) delete state.wrongQuestions[questionId];
+        saveState();
+        return !currentValue;
+      }
+
+      function findWord(word) {
+        return WORD_BANK.find((item) => item.word.toLowerCase() === String(word).toLowerCase());
+      }
+
+      function renderPracticeStatus(message, tone) {
+        renderStatusBox(el.practiceStatus, message, tone, "练习状态");
+      }
+
+      function renderWordStatus(message, tone) {
+        renderStatusBox(el.wordStatus, message, tone, "学习状态");
+      }
+
+      function renderStatusBox(container, message, tone, title) {
+        container.classList.remove("success", "warning", "error");
+        if (tone) container.classList.add(tone);
+        container.innerHTML = `<strong>${escapeHtml(title)}</strong><div>${escapeHtml(message)}</div>`;
+      }
+
+      function syncToggleButton(id, active, activeText, inactiveText) {
+        const button = document.getElementById(id);
+        button.classList.toggle("active", Boolean(active));
+        button.textContent = active ? activeText : inactiveText;
+      }
+
+      function makeEmptyChip(text) {
+        const item = document.createElement("div");
+        item.className = "chip-button empty";
+        item.textContent = text;
+        return item;
+      }
+
+      function addUniqueFront(list, value, limit) {
+        return [value, ...list.filter((item) => item !== value)].slice(0, limit);
+      }
+
+      function countFlags(record) {
+        return Object.keys(record).filter((key) => record[key]).length;
+      }
+
+      function mapElements(ids) {
+        return ids.reduce((acc, id) => {
+          acc[id] = document.getElementById(id);
+          return acc;
+        }, {});
+      }
+
+      function loadState() {
+        const fallback = {
+          mastered: {},
+          favoriteWords: {},
+          reviewWords: {},
+          wrongQuestions: {},
+          recentWords: [],
+          dailyWords: {},
+          lastWord: "",
+          currentQuestionId: "",
+          currentPlanIndex: null,
+          lastVisitedTab: "words"
         };
-      } catch {
-        return { mastered: {}, history: [], lastWord: "" };
+
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            const legacy = localStorage.getItem("cet6-study-companion-v2");
+            if (!legacy) return fallback;
+            const parsedLegacy = JSON.parse(legacy);
+            return {
+              ...fallback,
+              mastered: sanitizeRecord(parsedLegacy.mastered),
+              recentWords: Array.isArray(parsedLegacy.history) ? parsedLegacy.history.slice(0, MAX_RECENT_WORDS) : [],
+              lastWord: parsedLegacy.lastWord || ""
+            };
+          }
+          const parsed = JSON.parse(raw);
+          return {
+            ...fallback,
+            mastered: sanitizeRecord(parsed.mastered),
+            favoriteWords: sanitizeRecord(parsed.favoriteWords),
+            reviewWords: sanitizeRecord(parsed.reviewWords),
+            wrongQuestions: sanitizeRecord(parsed.wrongQuestions),
+            recentWords: Array.isArray(parsed.recentWords) ? parsed.recentWords.slice(0, MAX_RECENT_WORDS) : [],
+            dailyWords: sanitizeDailyWords(parsed.dailyWords),
+            lastWord: parsed.lastWord || "",
+            currentQuestionId: parsed.currentQuestionId || "",
+            currentPlanIndex: Number.isInteger(parsed.currentPlanIndex) ? parsed.currentPlanIndex : null,
+            lastVisitedTab: typeof parsed.lastVisitedTab === "string" ? parsed.lastVisitedTab : "words"
+          };
+        } catch {
+          return fallback;
+        }
       }
-    }
 
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
+      function sanitizeRecord(value) {
+        return value && typeof value === "object" ? value : {};
+      }
 
-    function getDailyIndex() {
-      const now = new Date();
-      const start = new Date(now.getFullYear(), 0, 1);
-      const diff = now - start;
-      const dayOfYear = Math.floor(diff / 86400000);
-      return dayOfYear % DAILY_PLAN_BANK.length;
-    }
+      function sanitizeDailyWords(value) {
+        if (!value || typeof value !== "object") return {};
+        return Object.keys(value).reduce((acc, key) => {
+          acc[key] = Array.isArray(value[key]) ? value[key].filter((item) => typeof item === "string") : [];
+          return acc;
+        }, {});
+      }
 
-    function buildSeededOrder(length, seedSalt) {
-      const base = Array.from({ length }, (_, index) => index);
-      return base
-        .map((index) => ({ index, score: seededScore(index, seedSalt) }))
-        .sort((a, b) => a.score - b.score)
-        .map((item) => item.index);
-    }
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
 
-    function seededScore(index, seedSalt) {
-      const seed = (index + 1) * 1103515245 + (dailyIndex + 3) * 12345 + seedSalt * 97;
-      return Math.abs(Math.sin(seed)) * 1000000;
-    }
+      function buildSeededOrder(length, seedSalt) {
+        return Array.from({ length }, (_, index) => ({ index, score: seededScore(index, seedSalt) }))
+          .sort((a, b) => a.score - b.score)
+          .map((item) => item.index);
+      }
 
-    function formatToday() {
-      const now = new Date();
-      const weekday = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"][now.getDay()];
-      return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${weekday}`;
-    }
+      function seededScore(index, seedSalt) {
+        const seed = (index + 1) * 1103515245 + (dailySeed + 3) * 12345 + seedSalt * 97;
+        return Math.abs(Math.sin(seed)) * 1000000;
+      }
 
-    function escapeHtml(text) {
-      return String(text)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-    }
+      function getDailyIndex() {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 1);
+        return Math.floor((now - start) / 86400000);
+      }
+
+      function getTodayKey() {
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        return `${now.getFullYear()}-${month}-${day}`;
+      }
+
+      function formatToday() {
+        const now = new Date();
+        const weekday = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"][now.getDay()];
+        return `${now.getFullYear()} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 ${weekday}`;
+      }
+
+      function linkifyKnownWords(text) {
+        const escaped = escapeHtml(String(text));
+        return escaped.replace(/[A-Za-z][A-Za-z'-]*/g, (token) => {
+          const found = findWord(token);
+          if (!found) return token;
+          return `<span class="vocab-link" data-word="${escapeHtml(found.word)}" title="点击查看 ${escapeHtml(found.word)} 的释义">${token}</span>`;
+        });
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      async function buildDocxBlob(groups) {
+        const files = [
+          { name: "[Content_Types].xml", content: buildContentTypesXml() },
+          { name: "_rels/.rels", content: buildRootRelsXml() },
+          { name: "docProps/app.xml", content: buildAppXml() },
+          { name: "docProps/core.xml", content: buildCoreXml() },
+          { name: "word/document.xml", content: buildDocumentXml(groups) },
+          { name: "word/styles.xml", content: buildStylesXml() },
+          { name: "word/_rels/document.xml.rels", content: buildDocumentRelsXml() }
+        ];
+
+        const bytes = await buildZip(files);
+        return new Blob([bytes], {
+          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        });
+      }
+
+      function buildContentTypesXml() {
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+  <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
+</Types>`;
+      }
+
+      function buildRootRelsXml() {
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+</Relationships>`;
+      }
+
+      function buildDocumentRelsXml() {
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>`;
+      }
+
+      function buildAppXml() {
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+  <Application>OpenAI Codex</Application>
+</Properties>`;
+      }
+
+      function buildCoreXml() {
+        const created = new Date().toISOString();
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dc:title>六级学习清单</dc:title>
+  <dc:creator>OpenAI Codex</dc:creator>
+  <cp:lastModifiedBy>OpenAI Codex</cp:lastModifiedBy>
+  <dcterms:created xsi:type="dcterms:W3CDTF">${created}</dcterms:created>
+  <dcterms:modified xsi:type="dcterms:W3CDTF">${created}</dcterms:modified>
+</cp:coreProperties>`;
+      }
+
+      function buildStylesXml() {
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Microsoft YaHei"/>
+      <w:sz w:val="22"/>
+      <w:lang w:val="zh-CN" w:eastAsia="zh-CN"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Title">
+    <w:name w:val="Title"/>
+    <w:basedOn w:val="Normal"/>
+    <w:rPr><w:b/><w:sz w:val="34"/><w:color w:val="93451F"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading1">
+    <w:name w:val="heading 1"/>
+    <w:basedOn w:val="Normal"/>
+    <w:rPr><w:b/><w:sz w:val="28"/><w:color w:val="3D8C84"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading2">
+    <w:name w:val="heading 2"/>
+    <w:basedOn w:val="Normal"/>
+    <w:rPr><w:b/><w:sz w:val="24"/><w:color w:val="2E251D"/></w:rPr>
+  </w:style>
+</w:styles>`;
+      }
+
+      function buildDocumentXml(groups) {
+        const parts = [];
+        parts.push(wordParagraph("六级学习清单", "Title"));
+        parts.push(wordParagraph(`导出日期：${formatToday()}`));
+        parts.push(wordParagraph(""));
+        groups.forEach((group) => {
+          parts.push(wordParagraph(`${group.title}（${group.words.length} 个）`, "Heading1"));
+          group.words.forEach((word, index) => {
+            parts.push(wordParagraph(`${index + 1}. ${word.word}`, "Heading2"));
+            parts.push(wordParagraph(`音标：${word.phonetic || "暂无"}`));
+            parts.push(wordParagraph(`释义：${word.meaning || "暂无"}`));
+            parts.push(wordParagraph(`搭配：${word.collocation || "暂无"}`));
+            parts.push(wordParagraph(`记忆提示：${word.tip || "暂无"}`));
+            (word.examples || []).forEach((example, exampleIndex) => {
+              parts.push(wordParagraph(`例句 ${exampleIndex + 1}：${example[0] || ""}`));
+              parts.push(wordParagraph(`译文 ${exampleIndex + 1}：${example[1] || ""}`));
+            });
+            parts.push(wordParagraph(""));
+          });
+        });
+
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    ${parts.join("")}
+    <w:sectPr>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+      }
+
+      function wordParagraph(text, style = "Normal") {
+        const runs = String(text || "").split("\n").map((line, index, array) => {
+          const breakTag = index < array.length - 1 ? "<w:br/>" : "";
+          return `<w:r><w:t xml:space="preserve">${escapeXml(line)}</w:t>${breakTag}</w:r>`;
+        }).join("");
+        return `<w:p><w:pPr><w:pStyle w:val="${style}"/></w:pPr>${runs || '<w:r><w:t xml:space="preserve"></w:t></w:r>'}</w:p>`;
+      }
+
+      function escapeXml(text) {
+        return String(text)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&apos;");
+      }
+
+      async function buildZip(files) {
+        const encoder = new TextEncoder();
+        const fileEntries = files.map((file) => ({ name: file.name.replace(/\\/g, "/"), data: encoder.encode(file.content) }));
+        let offset = 0;
+        const localChunks = [];
+        const centralChunks = [];
+
+        fileEntries.forEach((entry) => {
+          const nameBytes = encoder.encode(entry.name);
+          const crc = crc32(entry.data);
+          const size = entry.data.length;
+
+          const localHeader = new Uint8Array(30 + nameBytes.length);
+          const localView = new DataView(localHeader.buffer);
+          localView.setUint32(0, 0x04034b50, true);
+          localView.setUint16(4, 20, true);
+          localView.setUint32(14, crc, true);
+          localView.setUint32(18, size, true);
+          localView.setUint32(22, size, true);
+          localView.setUint16(26, nameBytes.length, true);
+          localHeader.set(nameBytes, 30);
+          localChunks.push(localHeader, entry.data);
+
+          const centralHeader = new Uint8Array(46 + nameBytes.length);
+          const centralView = new DataView(centralHeader.buffer);
+          centralView.setUint32(0, 0x02014b50, true);
+          centralView.setUint16(4, 20, true);
+          centralView.setUint16(6, 20, true);
+          centralView.setUint32(16, crc, true);
+          centralView.setUint32(20, size, true);
+          centralView.setUint32(24, size, true);
+          centralView.setUint16(28, nameBytes.length, true);
+          centralView.setUint32(42, offset, true);
+          centralHeader.set(nameBytes, 46);
+          centralChunks.push(centralHeader);
+
+          offset += localHeader.length + entry.data.length;
+        });
+
+        const centralSize = centralChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+        const centralOffset = offset;
+        const endRecord = new Uint8Array(22);
+        const endView = new DataView(endRecord.buffer);
+        endView.setUint32(0, 0x06054b50, true);
+        endView.setUint16(8, fileEntries.length, true);
+        endView.setUint16(10, fileEntries.length, true);
+        endView.setUint32(12, centralSize, true);
+        endView.setUint32(16, centralOffset, true);
+
+        const totalSize = localChunks.reduce((sum, chunk) => sum + chunk.length, 0) + centralSize + endRecord.length;
+        const output = new Uint8Array(totalSize);
+        let cursor = 0;
+        [...localChunks, ...centralChunks, endRecord].forEach((chunk) => {
+          output.set(chunk, cursor);
+          cursor += chunk.length;
+        });
+        return output;
+      }
+
+      function buildCrcTable() {
+        const table = new Uint32Array(256);
+        for (let i = 0; i < 256; i += 1) {
+          let c = i;
+          for (let bit = 0; bit < 8; bit += 1) {
+            c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+          }
+          table[i] = c >>> 0;
+        }
+        return table;
+      }
+
+      function crc32(bytes) {
+        let crc = 0xffffffff;
+        for (let i = 0; i < bytes.length; i += 1) {
+          crc = crcTable[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+        }
+        return (crc ^ 0xffffffff) >>> 0;
+      }
+
+      function downloadBlob(blob, fileName) {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = fileName;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+      }
+    })();
   </script>
 </body>
 </html>
