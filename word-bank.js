@@ -1,6 +1,6 @@
 'use strict';
 
-const WORD_BANK = [
+window.WORD_BANK = [
       {
         word: "allocate",
         phonetic: "/ˈæləkeɪt/",
@@ -902,5 +902,3 @@ const WORD_BANK = [
         ]
       }
     ];
-
-window.WORD_BANK = WORD_BANK;

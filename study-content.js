@@ -1,6 +1,6 @@
 'use strict';
 
-const QUESTION_BANK = [
+window.QUESTION_BANK = [
       {
         id: "v1",
         type: "词汇选择",
@@ -273,7 +273,7 @@ const QUESTION_BANK = [
       }
     ];
 
-const DAILY_PLAN_BANK = [
+window.DAILY_PLAN_BANK = [
       {
         day: 1,
         title: "第 1 天：建立节奏",
@@ -485,6 +485,3 @@ const DAILY_PLAN_BANK = [
         tips: "可用表达：derive from reflection, gradual growth, consistent practice。"
       }
     ];
-
-window.QUESTION_BANK = QUESTION_BANK;
-window.DAILY_PLAN_BANK = DAILY_PLAN_BANK;
